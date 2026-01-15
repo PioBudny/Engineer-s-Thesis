@@ -1,0 +1,29 @@
+Change Component Comment: Designator=C3 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment: Designator=C4 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment: Designator=C5 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment: Designator=C9 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment: Designator=C10 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment: Designator=C11 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment: Designator=C12 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment: Designator=C13 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment: Designator=C14 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment: Designator=C15 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment: Designator=C16 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment: Designator=C17 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment: Designator=C18 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment: Designator=C19 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment: Designator=R4 Old Comment=ERA8AEB103V New Comment=10K
+Change Component Comment: Designator=R5 Old Comment=ERA8AEB103V New Comment=10K
+Change Component Comment: Designator=R6 Old Comment=ERA8AEB103V New Comment=10K
+Change Component Comment: Designator=R7 Old Comment=ERA8AEB103V New Comment=10K
+Change Component Comment: Designator=R8 Old Comment=ERA8AEB103V New Comment=10K
+Change Component Designator: OldDesignator=U? NewDesignator=U4
+Add Pin To Net: Pin=P2-1 Old Net=NetP2_1 New Net=TIMER_STM32
+Add Pin To Net: Pin=P2-2 Old Net=NetP2_2 New Net=SDA
+Add Pin To Net: Pin=P2-3 Old Net=NetP2_3 New Net=SCL
+Add Pin To Net: Pin=P2-4 Old Net=NetP2_4 New Net=GPIO_1
+Add Pin To Net: Pin=P2-5 Old Net=NetP2_5 New Net=GPIO_2
+Add Pin To Net: Pin=P2-6 Old Net=NetP2_6 New Net=GPIO_3
+Add Pin To Net: Pin=P2-7 Old Net=NetP2_7 New Net=GPIO_4
+Add Pin To Net: Pin=P2-8 Old Net=NetP2_8 New Net=INTR
+Add Pin To Net: Pin=P2-9 Old Net=NetP2_9 New Net=RESET

@@ -1,0 +1,52 @@
+Change Component DesignItemId : Designator=P2 Old DesignItemId=CMP-1502-01080-3 New DesignItemId=CMP-1502-01080-4
+Change Component Description : Designator=P2 Old Description= New Description=THT Vertical Pin Header WR-PHD, Pitch 2.54 mm, Single Row, 9 pins
+Change Component Library : Designator=D1 Old Library=* New Library=TDR.IntLib
+Change Component Library : Designator=D2 Old Library=* New Library=TDR.IntLib
+Change Component Library : Designator=D3 Old Library=* New Library=TDR.IntLib
+Change Component Library : Designator=D4 Old Library=* New Library=TDR.IntLib
+Change Component Library : Designator=IC1 Old Library=* New Library=TDR.IntLib
+Change Managed Component Library Link : Designator=P2 Old VaultGUID=B7D15EC3-160A-466F-A46C-7801FE6295A7 New VaultGUID=B7D15EC3-160A-466F-A46C-7801FE6295A7 Old ItemGUID=AAB1E598-F80B-480B-B028-C26FB758011A New ItemGUID=AAB1E598-F80B-480B-B028-C26FB758011A Old RevisionGUID=575354FD-36A6-4257-A4C2-4662FB50E18B New RevisionGUID=8ECA095F-642F-42A9-A762-A398C2B99907
+Change component parameters: Component "C1" not found
+Change component parameters: Component "C2" not found
+Change component parameters: Component "C6" not found
+Change component parameters: Component "C20" not found
+Change component parameters: Component "C21" not found
+Change component parameters: Component "C22" not found
+Change component parameters: Component "C23" not found
+Change component parameters: Component "C24" not found
+Change component parameters: Component "C25" not found
+Change component parameters: Component "C26" not found
+Change component parameters: Component "C27" not found
+Change component parameters: Component "C29" not found
+Change component parameters: Component "C30" not found
+Change component parameters: Component "C31" not found
+Change component parameters: Component "C32" not found
+Change component parameters: Component "C33" not found
+Change component parameters: Component "R1" not found
+Change component parameters: Component "R2" not found
+Change component parameters: Component "R3" not found
+Change component parameters: Component "R9" not found
+Change component parameters: Component "R10" not found
+Change component parameters: Component "R11" not found
+Change component parameters: Component "R50" not found
+Change component parameters: Designator = "P2" ("P2"); Footprint = "61300911121"; UniqueID = "\ICVRNCGT" ("\ICVRNCGT")
+Change component parameters (AddParameter): Name = "Color"; Value = "Black"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Connector Type"; Value = "Male Pin"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Contact Material"; Value = "Copper"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Contact Mating Length"; Value = "5.9944mm"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Contact Plating"; Value = "Gold"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Contact Resistance"; Value = "20m?"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Current Rating"; Value = "3A"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Gender"; Value = "Male"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Lead Pitch"; Value = "2.54mm"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Mount"; Value = "Through Hole"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Number of Contacts"; Value = "9"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Number of Pins"; Value = "9"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Number of Positions"; Value = "9"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Number of Rows"; Value = "1"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Operating Supply Voltage"; Value = "250V"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Orientation"; Value = "Vertical"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Packaging"; Value = "Bulk"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Pitch"; Value = "2.54mm"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "RoHS"; Value = "Compliant"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Termination"; Value = "Solder"; VariantName = "[No Variations]"

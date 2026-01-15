@@ -1,0 +1,4 @@
+Change Pin Designator/Name:  Old Designator=IC1-4 Old Name=CATHODE_4 New Designator =CATHODE_5 New Name=5
+Change Pin Designator/Name:  Old Designator=IC1-5 Old Name=CATHODE_5 New Designator =CATHODE_4 New Name=4
+Change Pin Designator/Name:  Old Designator=P2-8 Old Name=8 New Designator =9 New Name=9
+Change Pin Designator/Name:  Old Designator=P2-9 Old Name=9 New Designator =8 New Name=8

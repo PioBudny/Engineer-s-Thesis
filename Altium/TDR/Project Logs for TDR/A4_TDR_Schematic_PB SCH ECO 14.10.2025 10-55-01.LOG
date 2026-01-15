@@ -1,0 +1,22 @@
+Remove Pin=IC2-3 From Net=GPIO_1
+Remove Pin=IC2-5 From Net=SMA_OUT_1
+Remove Pin=IC2-7 From Net=GPIO_2
+Remove Pin=IC2-16 From Net=8T_CLK
+Remove Pin=IC2-17 From Net=8T_*CLK
+Remove Pin=IC2-24 From Net=GPIO_3
+Remove Pin=IC2-28 From Net=GPIO_4
+Change Component Footprint: Designator=C1 Old Footprint=FP-CL21-IPC_C New Footprint=WCAP-CSGP_0402_L1W0.5H0.5
+Change Component Footprint: Designator=C2 Old Footprint=FP-CL21-IPC_C New Footprint=WCAP-CSGP_0402_L1W0.5H0.5
+Change Component Footprint: Designator=C3 Old Footprint=FP-CL21-IPC_C New Footprint=WCAP-CSGP_0402_L1W0.5H0.5
+Change Component Footprint: Designator=C4 Old Footprint=FP-CL21-IPC_C New Footprint=WCAP-CSGP_0402_L1W0.5H0.5
+Change Component Footprint: Designator=C5 Old Footprint=FP-CL21-IPC_C New Footprint=WCAP-CSGP_0402_L1W0.5H0.5
+Change Component Footprint: Designator=C9 Old Footprint=FP-CL21-IPC_C New Footprint=WCAP-CSGP_0402_L1W0.5H0.5
+Change Component Footprint: Designator=C10 Old Footprint=FP-CL21-IPC_C New Footprint=WCAP-CSGP_0402_L1W0.5H0.5
+Change Component Footprint: Designator=C11 Old Footprint=FP-CL21-IPC_C New Footprint=WCAP-CSGP_0402_L1W0.5H0.5
+Change Component Footprint: Designator=C12 Old Footprint=FP-CL21-IPC_C New Footprint=WCAP-CSGP_0402_L1W0.5H0.5
+Change Pin Designator/Name:  Old Designator=C3-1 Old Name=1 New Designator =2 New Name=2
+Change Pin Designator/Name:  Old Designator=C3-2 Old Name=2 New Designator =1 New Name=1
+Change Pin Designator/Name:  Old Designator=C11-1 Old Name=1 New Designator =2 New Name=2
+Change Pin Designator/Name:  Old Designator=C11-2 Old Name=2 New Designator =1 New Name=1
+Change Pin Designator/Name:  Old Designator=C12-1 Old Name=1 New Designator =2 New Name=2
+Change Pin Designator/Name:  Old Designator=C12-2 Old Name=2 New Designator =1 New Name=1

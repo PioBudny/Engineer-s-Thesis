@@ -1,0 +1,6 @@
+Change Net Name : Old Net Name=8T_CLK New Net Name=8T_CLK_P
+Change Net Name : Old Net Name=8T_CLK* New Net Name=8T_CLK_N
+Change Net Name : Old Net Name=ADC_CLK New Net Name=ADC_CLK_P
+Change Net Name : Old Net Name=ADC_CLK* New Net Name=ADC_CLK_N
+Added Differential Pair: Name=8T_CLK
+Added Differential Pair: Name=ADC_CLK

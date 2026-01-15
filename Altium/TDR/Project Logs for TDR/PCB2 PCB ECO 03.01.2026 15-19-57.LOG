@@ -1,0 +1,13 @@
+Added Pin To Net: NetName=GPIO_4 Pin=U4-3
+Added Pin To Net: NetName=GPIO_3 Pin=U4-7
+Added Pin To Net: NetName=GPIO_2 Pin=U4-24
+Added Pin To Net: NetName=GPIO_1 Pin=U4-28
+Added Pin To Net: NetName=ADC_CLK Pin=C7-2
+Added Pin To Net: NetName=ADC_CLK Pin=J3-1
+Added Net: Name=ADC_CLK
+Added Pin To Net: NetName=ADC_CLK* Pin=C8-2
+Added Pin To Net: NetName=ADC_CLK* Pin=J1-1
+Added Net: Name=ADC_CLK*
+Added Pin To Net: NetName=SMA_OUT Pin=C28-2
+Added Pin To Net: NetName=SMA_OUT Pin=J2-1
+Added Net: Name=SMA_OUT

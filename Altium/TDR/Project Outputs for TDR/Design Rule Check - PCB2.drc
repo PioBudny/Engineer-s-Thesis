@@ -1,0 +1,61 @@
+Protel Design System Design Rule Check
+PCB File : C:\Users\PioBudny\Desktop\Studia\In¿ynierka\Engineer-s-Thesis\Altium\TDR\PCB2.PcbDoc
+Date     : 07.01.2026
+Time     : 12:10:21
+
+Processing Rule : Clearance Constraint (Gap=0.203mm) (All),(All)
+Rule Violations :0
+
+Processing Rule : Short-Circuit Constraint (Allowed=No) (All),(All)
+Rule Violations :0
+
+Processing Rule : Un-Routed Net Constraint ( (All) )
+Rule Violations :0
+
+Processing Rule : Modified Polygon (Allow modified: No), (Allow shelved: No)
+Rule Violations :0
+
+Processing Rule : Width Constraint (Min=0.272mm) (Max=0.272mm) (Preferred=0.272mm) (InNetClass('IMP50'))
+Rule Violations :0
+
+Processing Rule : Routing Topology Rule(Topology=Shortest) (All)
+Rule Violations :0
+
+Processing Rule : Power Plane Connect Rule(Relief Connect )(Expansion=0.508mm) (Conductor Width=0.254mm) (Air Gap=0.254mm) (Entries=4) (All)
+Rule Violations :0
+
+Processing Rule : Hole Size Constraint (Min=0.025mm) (Max=3.2mm) (All)
+Rule Violations :0
+
+Processing Rule : Hole To Hole Clearance (Gap=0.254mm) (All),(All)
+Rule Violations :0
+
+Processing Rule : Minimum Solder Mask Sliver (Gap=0.2mm) (All),(All)
+   Violation between Minimum Solder Mask Sliver Constraint: (0.022mm < 0.2mm) Between Pad IC1-1(17.772mm,40.132mm) on Top Layer And Pad IC1-7(17.272mm,39.282mm) on Top Layer [Top Solder] Mask Sliver [0.022mm]
+   Violation between Minimum Solder Mask Sliver Constraint: (0.022mm < 0.2mm) Between Pad IC1-2(17.272mm,40.132mm) on Top Layer And Pad IC1-7(17.272mm,39.282mm) on Top Layer [Top Solder] Mask Sliver [0.022mm]
+   Violation between Minimum Solder Mask Sliver Constraint: (0.022mm < 0.2mm) Between Pad IC1-3(16.772mm,40.132mm) on Top Layer And Pad IC1-7(17.272mm,39.282mm) on Top Layer [Top Solder] Mask Sliver [0.022mm]
+   Violation between Minimum Solder Mask Sliver Constraint: (0.022mm < 0.2mm) Between Pad IC1-4(16.772mm,38.432mm) on Top Layer And Pad IC1-7(17.272mm,39.282mm) on Top Layer [Top Solder] Mask Sliver [0.022mm]
+   Violation between Minimum Solder Mask Sliver Constraint: (0.022mm < 0.2mm) Between Pad IC1-5(17.272mm,38.432mm) on Top Layer And Pad IC1-7(17.272mm,39.282mm) on Top Layer [Top Solder] Mask Sliver [0.022mm]
+   Violation between Minimum Solder Mask Sliver Constraint: (0.022mm < 0.2mm) Between Pad IC1-6(17.772mm,38.432mm) on Top Layer And Pad IC1-7(17.272mm,39.282mm) on Top Layer [Top Solder] Mask Sliver [0.022mm]
+Rule Violations :6
+
+Processing Rule : Silk To Solder Mask (Clearance=0.2mm) (IsPad),(All)
+   Violation between Silk To Solder Mask Clearance Constraint: (0.165mm < 0.2mm) Between Pad D1-1(39.878mm,75.083mm) on Top Layer And Track (39.003mm,72.183mm)(39.003mm,74.883mm) on Top Overlay [Top Overlay] to [Top Solder] clearance [0.165mm]
+   Violation between Silk To Solder Mask Clearance Constraint: (0.165mm < 0.2mm) Between Pad D1-1(39.878mm,75.083mm) on Top Layer And Track (40.753mm,72.183mm)(40.753mm,75.683mm) on Top Overlay [Top Overlay] to [Top Solder] clearance [0.165mm]
+   Violation between Silk To Solder Mask Clearance Constraint: (0.165mm < 0.2mm) Between Pad D1-2(39.878mm,71.983mm) on Top Layer And Track (39.003mm,72.183mm)(39.003mm,74.883mm) on Top Overlay [Top Overlay] to [Top Solder] clearance [0.165mm]
+   Violation between Silk To Solder Mask Clearance Constraint: (0.165mm < 0.2mm) Between Pad D1-2(39.878mm,71.983mm) on Top Layer And Track (40.753mm,72.183mm)(40.753mm,75.683mm) on Top Overlay [Top Overlay] to [Top Solder] clearance [0.165mm]
+Rule Violations :4
+
+Processing Rule : Silk to Silk (Clearance=0.254mm) (All),(All)
+Rule Violations :0
+
+Processing Rule : Net Antennae (Tolerance=0mm) (All)
+Rule Violations :0
+
+Processing Rule : Height Constraint (Min=0mm) (Max=25.4mm) (Prefered=12.7mm) (All)
+Rule Violations :0
+
+
+Violations Detected : 10
+Waived Violations : 0
+Time Elapsed        : 00:00:01

@@ -1,0 +1,107 @@
+Change Component Comment : Designator=C1 Old Comment=C0805X399C8HAC7800 New Comment=4.7 uF
+Change Component Comment : Designator=C30 Old Comment=C0805X399C8HAC7800 New Comment=4.7uF
+Change Component Comment : Designator=C2 Old Comment=C0805X399C8HAC7800 New Comment=10 uF
+Change Component Comment : Designator=C31 Old Comment=C0805X399C8HAC7800 New Comment=10uF
+Change Component Comment : Designator=C20 Old Comment=C0805X399C8HAC7800 New Comment=100pF
+Change Component Comment : Designator=C21 Old Comment=C0805X399C8HAC7800 New Comment=100pF
+Change Component Comment : Designator=C22 Old Comment=C0805X399C8HAC7800 New Comment=100pF
+Change Component Comment : Designator=C23 Old Comment=C0805X399C8HAC7800 New Comment=100pF
+Change Component Comment : Designator=C24 Old Comment=C0805X399C8HAC7800 New Comment=100pF
+Change Component Comment : Designator=C25 Old Comment=C0805X399C8HAC7800 New Comment=100pF
+Change Component Comment : Designator=C26 Old Comment=C0805X399C8HAC7800 New Comment=100pF
+Change Component Comment : Designator=C27 Old Comment=C0805X399C8HAC7800 New Comment=100pF
+Change Component Comment : Designator=C29 Old Comment=C0805X399C8HAC7800 New Comment=100pF
+Change Component Comment : Designator=C32 Old Comment=C0805X399C8HAC7800 New Comment=100pF
+Change Component Comment : Designator=C6 Old Comment=C0805X399C8HAC7800 New Comment=DNM
+Change Component Comment : Designator=C33 Old Comment=C0805X399C8HAC7800 New Comment=DNM
+Change Component Comment : Designator=C3 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment : Designator=C4 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment : Designator=C5 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment : Designator=C9 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment : Designator=C10 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment : Designator=C11 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment : Designator=C12 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment : Designator=C13 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment : Designator=C14 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment : Designator=C15 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment : Designator=C16 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment : Designator=C17 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment : Designator=C18 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment : Designator=C19 Old Comment=CL21B104KBCNNNC New Comment=0.1uF
+Change Component Comment : Designator=R4 Old Comment=ERA8AEB103V New Comment=10K
+Change Component Comment : Designator=R5 Old Comment=ERA8AEB103V New Comment=10K
+Change Component Comment : Designator=R6 Old Comment=ERA8AEB103V New Comment=10K
+Change Component Comment : Designator=R7 Old Comment=ERA8AEB103V New Comment=10K
+Change Component Comment : Designator=R8 Old Comment=ERA8AEB103V New Comment=10K
+Change component parameters: Designator = "R1" ("R1"); Footprint = "RESC0603"; UniqueID = "\ECMKECUG" ("\ECMKECUG")
+Change component parameters (AddParameter): Name = "DTEMP"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "SimulationGenericComponent"; Value = "True"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "T_REL_LOCAL"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC1"; Value = "0"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC2"; Value = "0"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TEMP"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "50"; VariantName = "[No Variations]"
+Change component parameters: Designator = "R2" ("R2"); Footprint = "RESC0603"; UniqueID = "\HOTKKEAT" ("\HOTKKEAT")
+Change component parameters (AddParameter): Name = "DTEMP"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "SimulationGenericComponent"; Value = "True"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "T_REL_LOCAL"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC1"; Value = "0"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC2"; Value = "0"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TEMP"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "50"; VariantName = "[No Variations]"
+Change component parameters: Designator = "R3" ("R3"); Footprint = "RESC0603"; UniqueID = "\GLWALAGU" ("\GLWALAGU")
+Change component parameters (AddParameter): Name = "DTEMP"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "SimulationGenericComponent"; Value = "True"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "T_REL_LOCAL"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC1"; Value = "0"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC2"; Value = "0"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TEMP"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "50"; VariantName = "[No Variations]"
+Change component parameters: Designator = "R9" ("R9"); Footprint = "RESC0603"; UniqueID = "\HINZDMVM" ("\HINZDMVM")
+Change component parameters (AddParameter): Name = "DTEMP"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "SimulationGenericComponent"; Value = "True"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "T_REL_LOCAL"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC1"; Value = "0"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC2"; Value = "0"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TEMP"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "50"; VariantName = "[No Variations]"
+Change component parameters: Designator = "R10" ("R10"); Footprint = "RES0805"; UniqueID = "\GENUWGWG" ("\GENUWGWG")
+Change component parameters (AddParameter): Name = "DTEMP"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "SimulationGenericComponent"; Value = "True"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "T_REL_LOCAL"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC1"; Value = "0"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC2"; Value = "0"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TEMP"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "33.2k"; VariantName = "[No Variations]"
+Change component parameters: Designator = "R11" ("R11"); Footprint = "RES0805"; UniqueID = "\BMTNNTNS" ("\BMTNNTNS")
+Change component parameters (AddParameter): Name = "DTEMP"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "SimulationGenericComponent"; Value = "True"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "T_REL_LOCAL"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC1"; Value = "0"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC2"; Value = "0"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TEMP"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "18.2K"; VariantName = "[No Variations]"
+Change component parameters: Designator = "R50" ("R50"); Footprint = "RESC0603"; UniqueID = "\QPJSHOST" ("\QPJSHOST")
+Change component parameters (AddParameter): Name = "DTEMP"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "SimulationGenericComponent"; Value = "True"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "T_REL_LOCAL"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC1"; Value = "0"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TC2"; Value = "0"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "TEMP"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "100"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=TIMER_STM32 Pin=P2-1
+Added Pin To Net: NetName=SDA Pin=P2-2
+Added Pin To Net: NetName=SCL Pin=P2-3
+Added Pin To Net: NetName=GPIO_1 Pin=P2-4
+Added Pin To Net: NetName=GPIO_2 Pin=P2-5
+Added Pin To Net: NetName=GPIO_3 Pin=P2-6
+Added Pin To Net: NetName=GPIO_4 Pin=P2-7
+Added Pin To Net: NetName=INTR Pin=P2-8
+Added Pin To Net: NetName=RESET Pin=P2-9

@@ -1,0 +1,5 @@
+Added Pin To Net: NetName=8T_CLK Pin=U4-16
+Added Pin To Net: NetName=8T_CLK* Pin=R3-1
+Added Pin To Net: NetName=8T_CLK* Pin=U1-2
+Added Pin To Net: NetName=8T_CLK* Pin=U4-17
+Added Net: Name=8T_CLK*
