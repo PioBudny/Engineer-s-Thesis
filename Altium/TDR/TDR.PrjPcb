@@ -117,6 +117,40 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=KQKNIRSB
 
+[Document5]
+DocumentPath=TDR3.PcbDoc
+AnnotationEnabled=1
+AnnotateStartValue=1
+AnnotationIndexControlEnabled=0
+AnnotateSuffix=
+AnnotateScope=All
+AnnotateOrder=-1
+DoLibraryUpdate=1
+DoDatabaseUpdate=1
+ClassGenCCAutoEnabled=1
+ClassGenCCAutoRoomEnabled=0
+ClassGenNCAutoScope=None
+DItemRevisionGUID=
+GenerateClassCluster=0
+DocumentUniqueId=EXQBTEIC
+
+[Document6]
+DocumentPath=8T49N241-999NLGI.SchDoc
+AnnotationEnabled=1
+AnnotateStartValue=1
+AnnotationIndexControlEnabled=0
+AnnotateSuffix=
+AnnotateScope=All
+AnnotateOrder=1
+DoLibraryUpdate=1
+DoDatabaseUpdate=1
+ClassGenCCAutoEnabled=1
+ClassGenCCAutoRoomEnabled=0
+ClassGenNCAutoScope=None
+DItemRevisionGUID=
+GenerateClassCluster=0
+DocumentUniqueId=OQXPPLLJ
+
 [GeneratedDocument1]
 DocumentPath=Project Outputs for TDR\Design Rule Check - PCB1.html
 DItemRevisionGUID=
@@ -126,6 +160,10 @@ DocumentPath=Project Outputs for TDR\Design Rule Check - PCB2.html
 DItemRevisionGUID=
 
 [GeneratedDocument3]
+DocumentPath=Project Outputs for TDR\Design Rule Check - TDR3.html
+DItemRevisionGUID=
+
+[GeneratedDocument4]
 DocumentPath=Project Outputs for TDR\Footprint Comparison - PCB2.html
 DItemRevisionGUID=
 
