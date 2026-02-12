@@ -1,6 +1,0 @@
-Removed Pin From Net: NetName=GND Pin=C26-1
-Removed Pin From Net: NetName=+3V3 Pin=C26-2
-Removed Pin From Net: NetName=GND Pin=C43-1
-Removed Pin From Net: NetName=+3V3 Pin=C43-2
-Removed Member From Class: ClassName=8T49N241-999NLGI Member=C26
-Removed Member From Class: ClassName=8T49N241-999NLGI Member=C43

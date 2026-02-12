@@ -1,8 +1,0 @@
-Removed Pin From Net: NetName=VCO3 Pin=C36-2
-Removed Pin From Net: NetName=VCO3 Pin=U4-9
-Removed Pin From Net: NetName=VCO3 Pin=U4-10
-Change Component Designator: OldDesignator=Power NewDesignator=P1
-Added Pin To Net: NetName=+1V8 Pin=C36-2
-Added Pin To Net: NetName=+1V8 Pin=U4-9
-Added Pin To Net: NetName=+1V8 Pin=U4-10
-Added Net: Name=+1V8
