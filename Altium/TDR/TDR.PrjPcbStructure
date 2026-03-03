@@ -1,2 +1,3 @@
-Record=TopLevelDocument|FileName=8T49N241-999NLGI.SchDoc|SheetNumber=2
-Record=NoMainPathDocument|SourceDocument=8T49N241-999NLGI.SchDoc|FileName=TDR_Schematic_PB.SchDoc|SheetNumber=1
+Record=TopLevelDocument|FileName=Main.SchDoc|SheetNumber=1
+Record=SheetSymbol|SourceDocument=Main.SchDoc|Designator=MCU|SchDesignator=MCU|FileName=8T49N241-999NLGI.SchDoc|SheetNumber=3|SymbolType=Normal|RawFileName=8T49N241-999NLGI.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=Main.SchDoc|Designator=Poer/In&Out|SchDesignator=Poer/In&Out|FileName=TDR_Schematic_PB.SchDoc|SheetNumber=2|SymbolType=Normal|RawFileName=TDR_Schematic_PB.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 

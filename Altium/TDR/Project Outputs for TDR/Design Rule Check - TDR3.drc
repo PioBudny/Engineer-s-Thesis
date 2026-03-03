@@ -1,7 +1,7 @@
 Protel Design System Design Rule Check
 PCB File : C:\Users\PioBu\OneDrive\Pulpit\github\Engineer-s-Thesis\Altium\TDR\TDR3.PcbDoc
-Date     : 12.02.2026
-Time     : 14:18:52
+Date     : 27.02.2026
+Time     : 14:53:39
 
 Processing Rule : Clearance Constraint (Gap=0.203mm) (All),(All)
 Rule Violations :0
@@ -15,16 +15,16 @@ Rule Violations :0
 Processing Rule : Modified Polygon (Allow modified: No), (Allow shelved: No)
 Rule Violations :0
 
-Processing Rule : Width Constraint (Min=0.122mm) (Max=0.122mm) (Preferred=0.122mm) (InNet('NetC4_1'))
+Processing Rule : Width Constraint (Min=0.122mm) (Max=0.156mm) (Preferred=0.156mm) (InNet('NetC4_1'))
 Rule Violations :0
 
 Processing Rule : Width Constraint (Min=0.2mm) (Max=1mm) (Preferred=0.254mm) (All)
 Rule Violations :0
 
-Processing Rule : Width Constraint (Min=0.131mm) (Max=0.131mm) (Preferred=0.131mm) (InNetClass('Signal'))
+Processing Rule : Width Constraint (Min=0.156mm) (Max=0.156mm) (Preferred=0.156mm) (InNetClass('Signal'))
 Rule Violations :0
 
-Processing Rule : Width Constraint (Min=0.122mm) (Max=0.122mm) (Preferred=0.122mm) (InNet('NetC5_1'))
+Processing Rule : Width Constraint (Min=0.122mm) (Max=0.156mm) (Preferred=0.156mm) (InNet('NetC5_1'))
 Rule Violations :0
 
 Processing Rule : Routing Topology Rule(Topology=Shortest) (All)
