@@ -1,9 +1,12 @@
 Protel Design System Design Rule Check
-PCB File : C:\Users\PioBudny\Desktop\Studia\In¿ynierka\Engineer-s-Thesis\Altium\TDR\TDR3.PcbDoc
-Date     : 04.03.2026
-Time     : 12:28:55
+PCB File : C:\Users\PioBu\OneDrive\Pulpit\github\Engineer-s-Thesis\Altium\TDR\TDR3.PcbDoc
+Date     : 07.03.2026
+Time     : 17:41:46
 
 Processing Rule : Clearance Constraint (Gap=0.203mm) (All),(All)
+Rule Violations :0
+
+Processing Rule : Clearance Constraint (Gap=0.5mm) (InNetClass('Signal')),(All)
 Rule Violations :0
 
 Processing Rule : Short-Circuit Constraint (Allowed=No) (All),(All)
@@ -45,7 +48,7 @@ Rule Violations :0
 Processing Rule : Length Constraint (Min=0mm) (Max=2540mm) (InNet('No Net'))
 Rule Violations :0
 
-Processing Rule : Matched Lengths(Tolerance=0.5mm Target=Not defined) (InNetClass('ADC line'))
+Processing Rule : Matched Lengths(Tolerance=0.5mm) (InNetClass('ADC line'))
 Rule Violations :0
 
 Processing Rule : Height Constraint (Min=0mm) (Max=25.4mm) (Prefered=12.7mm) (All)
@@ -54,4 +57,4 @@ Rule Violations :0
 
 Violations Detected : 0
 Waived Violations : 0
-Time Elapsed        : 00:00:01
+Time Elapsed        : 00:00:00

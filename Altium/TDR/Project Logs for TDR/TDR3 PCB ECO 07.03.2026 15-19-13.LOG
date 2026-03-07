@@ -1,0 +1,7 @@
+Change Component Footprint: Designator=J1 Old Footprint= New Footprint=CONN_142-0701-851_CIN
+Change Component Footprint: Designator=J2 Old Footprint= New Footprint=CONN_142-0701-851_CIN
+Change Component Footprint: Designator=J3 Old Footprint= New Footprint=CONN_142-0701-851_CIN
+Change Component Footprint: Designator=J4 Old Footprint= New Footprint=CONN_142-0701-851_CIN
+Change Component Comment : Designator=J1 Old Comment=142-0701-851 New Comment=
+Added Member To Class: ClassName=TDR_Schematic_PB Member=Component J1
+Added Member To Class: ClassName=TDR_Schematic_PB Member=Component J3 142-0701-851

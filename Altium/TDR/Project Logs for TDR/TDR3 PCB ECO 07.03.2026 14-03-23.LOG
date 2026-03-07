@@ -1,0 +1,10 @@
+Added Component: Designator=X1(5MS1S102AM2QE)
+Add component (AddParameter): Name = "Datasheet Link"; Value = "https://www.tme.eu/Document/6c0299ce3235dd46f456febe8a77357f/slide_switch_5M.PDF"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Geometry.Height"; Value = "12.93mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Name"; Value = "LIGHT COUNTRY"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Part_Number"; Value = "5MS1S102AM2QE"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "TME Electronic Components Part Number"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "TME Electronic Components Price/Stock"; Value = ""; VariantName = "[No Variations]"
+Added Pin To Net: NetName=NetD1_1 Pin=X1-1
+Added Pin To Net: NetName=NetC42_1 Pin=X1-2
+Added Member To Class: ClassName=TDR_Schematic_PB Member=Component X1 5MS1S102AM2QE

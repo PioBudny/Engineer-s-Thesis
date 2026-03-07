@@ -1,0 +1,10 @@
+Added Component: Designator=X2(H130B2500018F1030EXTTR)
+Add component (AddParameter): Name = "Datasheet Link"; Value = "https://raltron.com/webproducts/specs/CRYSTAL/H130B-25.000-18-F-1030-EXT-TR.pdf"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Farnell Part Number"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Farnell Price/Stock"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Geometry.Height"; Value = "0.9mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Name"; Value = "RALTRON"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Part_Number"; Value = "H130B-25.000-18-F-1030-EXT-TR"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=NetU3_33 Pin=X2-1
+Added Pin To Net: NetName=NetU3_34 Pin=X2-3
+Added Member To Class: ClassName=8T49N241-999NLGI Member=Component X2 H130B-25.000-18-F-1030-EXT-TR
