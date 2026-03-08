@@ -1,5 +1,0 @@
-Removed Member From Class: ClassName=TDR_Schematic_PB Member=X2
-Change Component Designator: OldDesignator=J3 NewDesignator=J2
-Added Class: Name=Signal
-Added Member To Class: ClassName=TDR_Schematic_PB Member=Component J3 142-0701-851
-Added Member To Class: ClassName=TDR_Schematic_PB Member=Component X1 5MS1S102AM2QE

@@ -1,0 +1,111 @@
+%Główny plik Pracy dyplomowej
+
+\documentclass[
+    left=2.5cm,         
+    right=2.5cm,        
+    top=2.5cm,          
+    bottom=3cm,         
+    bindingoffset=6mm,  
+    nohyphenation=false %Sprawdźić czy jest do wyłączenia czy nie!!!!!!!!!!!!!!
+]{technical/eiti-thesis}
+
+\langpol                              % Język Polski
+\graphicspath{{figures/}}             % ścieżka katalogu z grafikami.
+\addbibresource{bibliografia.bib}     % Plik z bibliografią
+
+\begin{document}
+
+%--------------------------------------
+% Strona tytułowa
+%--------------------------------------
+\EngineerThesis
+\instytut{Instytut Systemów Elektronicznych}
+\kierunek{Elektronika}
+\specjalnosc{Elektronika i fotonika}
+\title{
+    Opracowanie generatora impulsów do pomiarów parametrów linii transmisyjnych
+}
+\engtitle{
+    Development of a Pulse Generator for Transmission Line Parameter Measurements
+}
+\author{Piotr Budny}
+\album{324985}
+\promotor{Dr inż. Maciej Urbański}
+\date{2026}
+\maketitle
+
+%--------------------------------------
+% Streszczenie po polsku
+%--------------------------------------
+\cleardoublepage 
+\streszczenie \input{technical/abstractPOL}
+\slowakluczowe XXX, XXX, XXX
+
+%--------------------------------------
+% Streszczenie po angielsku
+%--------------------------------------
+\newpage
+\abstract \input{technical/abstractENG}
+\keywords XXX, XXX, XXX
+
+%--------------------------------------
+% Oświadczenie o autorstwie
+%--------------------------------------
+\cleardoublepage  
+\pagestyle{plain}
+\makeauthorship
+
+%--------------------------------------
+% Spis treści
+%--------------------------------------
+\cleardoublepage 
+\tableofcontents
+
+%--------------------------------------
+% Rozdziały
+%--------------------------------------
+\cleardoublepage 
+\pagestyle{headings}
+
+\input{1-wstep}         
+\input{2-Wstep_teoretyczny}    
+\input{3-Gotowe_rozwiązania}    
+\input{4-Wybrane_rozwiązanie}    
+\input{5-Projekt_reflektometru}    
+\input{6-Oprogramowanie}    
+\input{7- Testy}    
+\input{8-Podsumowanie}    
+
+%--------------------------------------------
+% Literatura
+%--------------------------------------------
+\cleardoublepage 
+\printbibliography
+
+%--------------------------------------------
+% Spisy (opcjonalne)
+%--------------------------------------------
+\newpage
+\pagestyle{plain}
+
+% Wykaz symboli i skrótów.
+\vspace{0.8cm}
+\acronymlist
+%\acronym{EiTI}{Wydział Elektroniki i Technik Informacyjnych}
+
+
+\listoffigurestoc     % Spis rysunków.
+\vspace{1cm}          
+\listoftablestoc      % Spis tabel.
+\vspace{1cm}          
+\listofappendicestoc  % Spis załączników
+
+% Załączniki
+\newpage
+%\appendix{Nazwa załącznika 1}
+
+
+
+
+
+\end{document}
