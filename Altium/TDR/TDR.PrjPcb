@@ -152,19 +152,7 @@ GenerateClassCluster=0
 DocumentUniqueId=HURGPDOR
 
 [GeneratedDocument1]
-DocumentPath=Project Outputs for TDR\Design Rule Check - PCB1.html
-DItemRevisionGUID=
-
-[GeneratedDocument2]
-DocumentPath=Project Outputs for TDR\Design Rule Check - PCB2.html
-DItemRevisionGUID=
-
-[GeneratedDocument3]
 DocumentPath=Project Outputs for TDR\Design Rule Check - TDR3.html
-DItemRevisionGUID=
-
-[GeneratedDocument4]
-DocumentPath=Project Outputs for TDR\Footprint Comparison - PCB2.html
 DItemRevisionGUID=
 
 [Configuration1]
