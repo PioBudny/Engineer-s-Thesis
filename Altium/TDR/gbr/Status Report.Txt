@@ -1,0 +1,26 @@
+Output: Gerber X2 Files
+Type  : GerberX2
+From  : Variant [[No Variations]] of Project [TDR.PrjPcb]
+   Generated File[TDR3_Copper_Signal_Top.gbr]
+   Generated File[TDR3_Copper_Signal_1.gbr]
+   Generated File[TDR3_Copper_Plane_1.gbr]
+   Generated File[TDR3_Copper_Plane_2.gbr]
+   Generated File[TDR3_Copper_Signal_2.gbr]
+   Generated File[TDR3_Copper_Signal_Bot.gbr]
+   Generated File[TDR3_Legend_Top.gbr]
+   Generated File[TDR3_Legend_Bot.gbr]
+   Generated File[TDR3_Soldermask_Top.gbr]
+   Generated File[TDR3_Soldermask_Bot.gbr]
+   Generated File[TDR3_Paste_Top.gbr]
+   Generated File[TDR3_Paste_Bot.gbr]
+   Generated File[TDR3_Profile.gbr]
+   Generated File[TDR3_NPTH_Drill.gbr]
+   Generated File[TDR3_PTH_Drill.gbr]
+   Generated File[TDR3.EXTREP]
+   Generated File[TDR3.REP]
+
+
+Files Generated   : 17
+Documents Printed : 0
+
+Finished Output Generation At 14:53:37 On 08.04.2026

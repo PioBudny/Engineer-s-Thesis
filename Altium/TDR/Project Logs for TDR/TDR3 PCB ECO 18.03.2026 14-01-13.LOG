@@ -1,5 +1,0 @@
-Removed Member From Class: ClassName=Signal Member=ADC_CLK_N
-Removed Member From Class: ClassName=Signal Member=ADC_CLK_P
-Added Class: Name=Diff_Signal
-Added Member To Class: ClassName=Signal Member=Wire NetC24_1
-Added Member To Class: ClassName=Signal Member=Wire NetC31_1
