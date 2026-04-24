@@ -34,17 +34,18 @@ project(TDR_software C CXX ASM)
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
-
+ 
 add_executable(TDR_software 
-    Main.c
-    GUI.c )
+    src/Main.c
+    src/NLG/NLG9881.c
+)
 
 pico_set_program_name(TDR_software "TDR_software")
 pico_set_program_version(TDR_software "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(TDR_software 0)
-pico_enable_stdio_usb(TDR_software 0)
+pico_enable_stdio_usb(TDR_software 1)
 
 # Add the standard library to the build
 target_link_libraries(TDR_software
@@ -52,7 +53,9 @@ target_link_libraries(TDR_software
 
 # Add the standard include files to the build
 target_include_directories(TDR_software PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}
+    ${CMAKE_CURRENT_LIST_DIR}/src
+    ${CMAKE_CURRENT_LIST_DIR}/src/GUI
+    ${CMAKE_CURRENT_LIST_DIR}/src/NLG
 )
 
 # Add any user requested libraries
