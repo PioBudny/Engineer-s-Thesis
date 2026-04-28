@@ -37,6 +37,7 @@ pico_sdk_init()
  
 add_executable(TDR_software 
     src/Main.c
+    src/app.py
     src/NLG/NLG9881.c
 )
 
@@ -54,7 +55,6 @@ target_link_libraries(TDR_software
 # Add the standard include files to the build
 target_include_directories(TDR_software PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/src
-    ${CMAKE_CURRENT_LIST_DIR}/src/GUI
     ${CMAKE_CURRENT_LIST_DIR}/src/NLG
 )
 
