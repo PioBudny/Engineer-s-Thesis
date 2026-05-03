@@ -80,8 +80,8 @@ def send_impulse():
             freq = float(frequency_entry.get())
 
             if 8 <= freq <= 250:
-                scaled_freq = freq / scaling_value
-                ser.write(f"IMPULSE_CONTINUOUS:{scaled_freq}:{channel}\n".encode())
+                scaled_freq = freq * 1000  # konwersja z kHz na Hz
+                ser.write(f"IMPULSE_CONTINUOUS:{int(scaled_freq)}:{channel}\n".encode())
                 add_log(f"Sending continous impulses {freq}kHz on {channel_text}")
             else:
                 frequency_label.config(text="Frequency out of range (8-250 kHz)")
@@ -178,8 +178,6 @@ frequency_label.pack(side=tk.LEFT, padx=5)
 frequency_entry = tk.Entry(frequency_frame, width=10)
 frequency_entry.insert(0, "100")
 frequency_entry.pack(side=tk.LEFT, padx=5)
-
-scaling_value = 1000
 
 # BUTTONS
 buttons_frame = tk.Frame(root)
