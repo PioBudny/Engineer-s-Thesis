@@ -25,11 +25,59 @@ volatile bool led_state = false;
 
 #define CLOCK_CTRL_PIN 10
 
+static bool i2c_address_exists(uint8_t addr)
+{
+    uint8_t dummy = 0;
+    int result;
+
+    // 1) Najpierw próbujemy samo potwierdzenie adresu: write bez danych.
+    result = i2c_write_blocking(I2C_PORT, addr, &dummy, 0, false);
+    if (result >= 0) {
+        return true;
+    }
+
+    // 2) Spróbuj odczytu 1 bajtu (niektóre urządzenia odpowiadają tylko na read).
+    result = i2c_read_blocking(I2C_PORT, addr, &dummy, 1, false);
+    if (result >= 0) {
+        return true;
+    }
+
+    // 3) Spróbuj zapisu 1 bajtu, co może zadziałać dla urządzeń wymagających minimalnej sekwencji.
+    result = i2c_write_blocking(I2C_PORT, addr, &dummy, 1, false);
+    return result >= 0;
+}
+
+void scan_i2c()
+{
+    printf("Skanowanie magistrali I2C...\n");
+
+    int devices_found = 0;
+
+    for(uint8_t addr = 0x03; addr <= 0x77; addr++)
+    {
+        if (i2c_address_exists(addr))
+        {
+            printf("Znaleziono urządzenie: 0x%02X\n", addr);
+            devices_found++;
+        }
+    }
+
+    if(devices_found == 0)
+    {
+        printf("Nie znaleziono urządzeń I2C\n");
+    }
+    else
+    {
+        printf("Koniec skanowania\n");
+    }
+}
+
 void clock_ctrl_init() {
     gpio_init(CLOCK_CTRL_PIN);
     gpio_set_dir(CLOCK_CTRL_PIN, GPIO_OUT);
+    //gpio_set_function(CLOCK_CTRL_PIN, GPIO_FUNC_GPCK);  //GPIO 10 jako clock output
 
-    gpio_put(CLOCK_CTRL_PIN, 0); // start: OFF
+    gpio_put(CLOCK_CTRL_PIN, 0);
 }
 static inline void clock_stop_fast() {
     sio_hw->gpio_clr = (1u << CLOCK_CTRL_PIN);
@@ -44,8 +92,11 @@ int main()
 
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
-    gpio_put(LED_PIN, 0); // Start with LED off
+    gpio_put(LED_PIN, 0);
+    clock_ctrl_init();
     i2c_device_init(I2C_PORT, I2C_SDA, I2C_SCL);
+    gpio_pull_up(I2C_SDA);
+    gpio_pull_up(I2C_SCL);
 
     // Inicjalizacja urządzenia NLG9881
     uint16_t device_id;
@@ -54,6 +105,7 @@ int main()
     } else {
         printf("Failed to read device ID\n");
     }
+    printf("Ready for commands...\n");
 
     char buffer[64];
     int buffer_index = 0;
@@ -69,7 +121,6 @@ int main()
                 
                 // Przetworzenie komendy
                 if (strncmp(buffer, "IMPULSE_SINGLE:", 15) == 0) {
-                    // Parsowanie kanałów: "1", "2", "12"
                     const char *channels_str = &buffer[15];
                     
                     for (int i = 0; channels_str[i] != '\0'; i++) {
@@ -89,7 +140,6 @@ int main()
                     gpio_put(LED_PIN, 0);
                 }
                 else if (strncmp(buffer, "IMPULSE_CONTINUOUS:", 19) == 0) {
-                    // Parsowanie: "IMPULSE_CONTINUOUS:freq:channels"
                     uint32_t freq_hz;
                     char channels_str[10];
                     
@@ -110,7 +160,7 @@ int main()
                                 }
                             }
                             
-                            // Rozpocznij mruganie diody proporcjonalnie do częstotliwości (wolniej dla niższych freq)
+                            // Proporcjonalne mruganie
                             led_blinking = true;
                             blink_period_ms = (uint32_t)(500.0 * (8000.0 / freq_hz));  // Skalowanie: 500ms dla 8kHz, ~16ms dla 250kHz
                             if (blink_period_ms < 10) blink_period_ms = 10;  // Minimalny 10ms
@@ -137,6 +187,49 @@ int main()
                     gpio_put(LED_PIN, 1);
                     sleep_ms(500);
                     gpio_put(LED_PIN, 0);
+                }
+                else if (strncmp(buffer, "DEBUG_LED_ON", 12) == 0) {
+                    // Skonfiguruj wyjście 1 w tryb CMOS
+                    if (device_set_output_cmos(I2C_PORT, 1)) {
+                        // Włącz sygnał zegarowy na wyjściu 1 (10 MHz)
+                        if (device_set_frequency(I2C_PORT, 1, 10000000)) {
+                            printf("Ustawiona częstotliwość 10 MHz na kanale 1\n");
+                            if (device_step_output(I2C_PORT, 1)) {
+                                printf("Clock signal 10 MHz enabled on channel 1 (CMOS)\n");
+                                // Włącz zegar na GPIO 10
+                                clock_start_fast();
+                                // Włącz LED
+                                gpio_put(LED_PIN, 1);
+                            }
+                        }
+                    }
+                    printf("OK2\n");
+                    //gpio_put(LED_PIN, 1);
+                    uint8_t dummy = 0;
+                    scan_i2c();
+
+
+                }
+                else if (strncmp(buffer, "DEBUG_LED_OFF", 13) == 0) {
+                    // Wyłącz sygnał zegarowy na wyjściu 1
+                    if (device_disable_output(I2C_PORT, 1)) {
+                        printf("Clock signal disabled on channel 1\n");
+                        // Wyłącz zegar na GPIO 10
+                        clock_stop_fast();
+                        // Wyłącz LED
+                        gpio_put(LED_PIN, 0);
+                    }
+                    printf("OK\n");
+                    //gpio_put(LED_PIN, 0);
+                }
+                else if (strncmp(buffer, "READ_ID", 7) == 0) {
+                    uint16_t device_id2;
+                    if (device_read_id(I2C_PORT, &device_id2)) {
+                        printf("Device ID: 0x%04X\n", device_id2);
+                    } else {
+                        printf("Failed to read device ID\n");
+                    }
+                    printf("OK\n");
                 }
                 else {
                     printf("UNKNOWN\n");

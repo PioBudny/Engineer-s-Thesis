@@ -17,6 +17,7 @@ bool device_set_frequency(i2c_inst_t *i2c, uint8_t channel, uint32_t fout_hz);
 bool device_pulse_output(i2c_inst_t *i2c, uint8_t channel);
 bool device_step_output(i2c_inst_t *i2c, uint8_t channel);
 bool device_disable_output(i2c_inst_t *i2c, uint8_t channel);
+bool device_set_output_cmos(i2c_inst_t *i2c, uint8_t channel);
 
 // helper
 bool device_read_id(i2c_inst_t *i2c, uint16_t *id);
