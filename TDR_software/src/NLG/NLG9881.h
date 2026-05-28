@@ -4,6 +4,7 @@
 #include "hardware/i2c.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 // Adres urządzenia (S_A0=0, S_A1=0)
 #define DEVICE_ADDR 0x7C
@@ -18,6 +19,9 @@ bool device_pulse_output(i2c_inst_t *i2c, uint8_t channel);
 bool device_step_output(i2c_inst_t *i2c, uint8_t channel);
 bool device_disable_output(i2c_inst_t *i2c, uint8_t channel);
 bool device_set_output_cmos(i2c_inst_t *i2c, uint8_t channel);
+bool device_enable_q1_lvcmos(
+    i2c_inst_t *i2c
+);
 
 // helper
 bool device_read_id(i2c_inst_t *i2c, uint16_t *id);

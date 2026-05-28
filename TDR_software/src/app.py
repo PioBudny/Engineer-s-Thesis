@@ -185,12 +185,12 @@ def debug_led_off():
     add_log("Debug LED turned OFF")
 
 
-def read_device_id():
+def read_regs():
     if not (ser and ser.is_open):
         add_log("Not connected to Pico")
         return
-    ser.write(b"READ_ID\n")
-    add_log("Requested device ID")
+    ser.write(b"READ_REGS\n")
+    add_log("Requested device register dump")
 
 # ===== LOG =====
 
@@ -232,7 +232,7 @@ status_label.create_oval(2, 2, 18, 18, fill="red", outline="black", tags="led")
 
 tk.Button(top_frame, text="Connect", command=connect).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Open Log", command=open_log_window).pack(side=tk.RIGHT, padx=5)
-tk.Button(top_frame, text="Read Device ID", command=read_device_id).pack(side=tk.RIGHT, padx=5)
+tk.Button(top_frame, text="Read Registers", command=read_regs).pack(side=tk.RIGHT, padx=5)
 
 # TRYBY
 checkbox_frame = tk.Frame(root)

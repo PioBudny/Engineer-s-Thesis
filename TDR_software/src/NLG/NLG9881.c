@@ -1,6 +1,7 @@
 #include "NLG9881.h"
 #include "pico/stdlib.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 // Uruchomienie I2C i konfiguracja pinów
 void i2c_device_init(i2c_inst_t *i2c, uint sda, uint scl) {
@@ -36,7 +37,7 @@ bool i2c_write_reg16(i2c_inst_t *i2c, uint8_t addr, uint16_t reg, uint8_t *data,
         buffer[2 + i] = data[i];
     }
 
-    int ret = i2c_write_blocking(i2c, addr, buffer, len + 2, false);
+    int ret = i2c_write_timeout_us(i2c, addr, buffer, len + 2, false, 1000000); // 1s timeout
     return (ret >= 0);
 }
 
@@ -48,12 +49,12 @@ bool i2c_read_reg16(i2c_inst_t *i2c, uint8_t addr, uint16_t reg, uint8_t *data, 
     reg_buf[1] = reg & 0xFF;
 
     // ustaw adres rejestru
-    if (i2c_write_blocking(i2c, addr, reg_buf, 2, true) < 0) {
+    if (i2c_write_timeout_us(i2c, addr, reg_buf, 2, true, 1000000) < 0) { // 1s timeout
         return false;
     }
 
     // czytaj dane
-    if (i2c_read_blocking(i2c, addr, data, len, false) < 0) {
+    if (i2c_read_timeout_us(i2c, addr, data, len, false, 1000000) < 0) { // 1s timeout
         return false;
     }
 
@@ -133,45 +134,45 @@ bool device_pulse_output(i2c_inst_t *i2c, uint8_t channel) {
     return true;
 }
 
-bool device_set_frequency(i2c_inst_t *i2c, uint8_t channel, uint32_t fout_hz) {
-    if (channel > 3 || fout_hz == 0) return false;
+// bool device_set_frequency(i2c_inst_t *i2c, uint8_t channel, uint32_t fout_hz) {
+//     if (channel > 3 || fout_hz == 0) return false;
 
-    // STAŁE PLL (przykład)
-    const uint32_t fvco = 2500000000ULL; // 2.5 GHz
+//     // STAŁE PLL (przykład)
+//     const uint32_t fvco = 2500000000ULL; // 2.5 GHz
 
-    // oblicz divider
-    uint32_t odiv = fvco / fout_hz;
+//     // oblicz divider
+//     uint32_t odiv = fvco / fout_hz;
 
-    // ograniczenia (typowe dla takich układów)
-    if (odiv < 1 || odiv > 0xFFFF) return false;
+//     // ograniczenia (typowe dla takich układów)
+//     if (odiv < 1 || odiv > 0xFFFF) return false;
 
-    uint16_t reg_addr;
+//     uint16_t reg_addr;
 
-    // mapowanie kanałów (sprawdź datasheet!)
-    switch (channel) {
-        case 0: reg_addr = 0x0050; break;
-        case 1: reg_addr = 0x0052; break;
-        case 2: reg_addr = 0x0054; break;
-        case 3: reg_addr = 0x0056; break;
-        default: return false;
-    }
+//     // mapowanie kanałów (sprawdź datasheet!)
+//     switch (channel) {
+//         case 0: reg_addr = 0x0050; break;
+//         case 1: reg_addr = 0x0052; break;
+//         case 2: reg_addr = 0x0054; break;
+//         case 3: reg_addr = 0x0056; break;
+//         default: return false;
+//     }
 
-    uint8_t data[2];
-    data[0] = (odiv >> 8) & 0xFF;
-    data[1] = odiv & 0xFF;
+//     uint8_t data[2];
+//     data[0] = (odiv >> 8) & 0xFF;
+//     data[1] = odiv & 0xFF;
 
-    if (!i2c_write_reg16(i2c, DEVICE_ADDR, reg_addr, data, 2)) {
-        return false;
-    }
+//     if (!i2c_write_reg16(i2c, DEVICE_ADDR, reg_addr, data, 2)) {
+//         return false;
+//     }
 
-    // APPLY / UPDATE (bardzo ważne)
-    uint8_t update = 0x01;
-    if (!i2c_write_reg16(i2c, DEVICE_ADDR, 0x000F, &update, 1)) {
-        return false;
-    }
+//     // APPLY / UPDATE (bardzo ważne)
+//     uint8_t update = 0x01;
+//     if (!i2c_write_reg16(i2c, DEVICE_ADDR, 0x000F, &update, 1)) {
+//         return false;
+//     }
 
-    return true;
-}
+//     return true;
+// }
 
 
 bool device_config_gpio_as_enable(i2c_inst_t *i2c) {
@@ -193,4 +194,136 @@ bool device_disable_output(i2c_inst_t *i2c, uint8_t channel) {
     reg &= ~(1 << channel);
 
     return i2c_write_reg16(i2c, DEVICE_ADDR, 0x0039, &reg, 1);
+}
+
+static bool device_modify_reg(i2c_inst_t *i2c, uint16_t reg, uint8_t mask, uint8_t value);
+
+bool device_enable_q1_lvcmos(
+    i2c_inst_t *i2c
+)
+{
+    printf("Konfiguracja Q1...\n");
+
+
+    // ========================================
+    // Q1_DIS = 0
+    // REG 0x006F BIT 1
+    // ========================================
+
+    if(!device_modify_reg(
+        i2c,
+        0x006F,
+        (1 << 1),
+        0
+    ))
+    {
+        printf("Q1_DIS error\n");
+        return false;
+    }
+
+
+    // ========================================
+    // OUTMODE1 = LVCMOS
+    // REG 0x003E
+    // D6:D4 = 011
+    // ========================================
+
+    if(!device_modify_reg(
+        i2c,
+        0x003E,
+        0b01110000,
+        0b00110000
+    ))
+    {
+        printf("OUTMODE1 error\n");
+        return false;
+    }
+
+
+    // ========================================
+    // OUTEN1 = 1
+    // REG 0x0039 BIT 1
+    // ========================================
+
+    if(!device_modify_reg(
+        i2c,
+        0x0039,
+        (1 << 1),
+        (1 << 1)
+    ))
+    {
+        printf("OUTEN1 error\n");
+        return false;
+    }
+
+
+    // ========================================
+    // PLL_SYN = 1
+    // REG 0x0063 BIT 7
+    // ========================================
+
+    if(!device_modify_reg(
+        i2c,
+        0x0063,
+        (1 << 7),
+        (1 << 7)
+    ))
+    {
+        printf("PLL_SYN set error\n");
+        return false;
+    }
+
+    sleep_ms(10);
+
+
+    // ========================================
+    // PLL_SYN = 0
+    // ========================================
+
+    if(!device_modify_reg(
+        i2c,
+        0x0063,
+        (1 << 7),
+        0
+    ))
+    {
+        printf("PLL_SYN clear error\n");
+        return false;
+    }
+
+    printf("Q1 enabled in LVCMOS mode\n");
+
+    return true;
+}
+
+static bool device_modify_reg(
+    i2c_inst_t *i2c,
+    uint16_t reg,
+    uint8_t mask,
+    uint8_t value
+)
+{
+    uint8_t current;
+
+    if(!i2c_read_reg16(
+        i2c,
+        DEVICE_ADDR,
+        reg,
+        &current,
+        1
+    ))
+    {
+        return false;
+    }
+
+    current &= ~mask;
+    current |= (value & mask);
+
+    return i2c_write_reg16(
+        i2c,
+        DEVICE_ADDR,
+        reg,
+        &current,
+        1
+    );
 }

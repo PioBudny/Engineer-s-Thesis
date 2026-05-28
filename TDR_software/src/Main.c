@@ -5,6 +5,7 @@
 #include "hardware/timer.h"
 #include <string.h>
 #include "NLG9881.h"
+#include "hardware/clocks.h"
 
 // I2C defines
 #define I2C_PORT i2c0
@@ -28,23 +29,9 @@ volatile bool led_state = false;
 static bool i2c_address_exists(uint8_t addr)
 {
     uint8_t dummy = 0;
-    int result;
-
-    // 1) Najpierw próbujemy samo potwierdzenie adresu: write bez danych.
-    result = i2c_write_blocking(I2C_PORT, addr, &dummy, 0, false);
-    if (result >= 0) {
-        return true;
-    }
-
-    // 2) Spróbuj odczytu 1 bajtu (niektóre urządzenia odpowiadają tylko na read).
-    result = i2c_read_blocking(I2C_PORT, addr, &dummy, 1, false);
-    if (result >= 0) {
-        return true;
-    }
-
-    // 3) Spróbuj zapisu 1 bajtu, co może zadziałać dla urządzeń wymagających minimalnej sekwencji.
-    result = i2c_write_blocking(I2C_PORT, addr, &dummy, 1, false);
-    return result >= 0;
+    // Wysyłamy 1 bajt z timeout'em 1s i sprawdzamy czy rzeczywiście się wysłał (ACK od urządzenia)
+    int result = i2c_write_timeout_us(I2C_PORT, addr, &dummy, 1, false, 1000000);
+    return result == 1;
 }
 
 void scan_i2c()
@@ -53,12 +40,15 @@ void scan_i2c()
 
     int devices_found = 0;
 
-    for(uint8_t addr = 0x03; addr <= 0x77; addr++)
+    for(uint8_t addr = 0x03; addr <= 0x88; addr++)
     {
+        printf("Sprawdzanie adresu: 0x%02X... ", addr);
         if (i2c_address_exists(addr))
         {
-            printf("Znaleziono urządzenie: 0x%02X\n", addr);
+            printf("ZNALEZIONO\n");
             devices_found++;
+        } else {
+            printf("brak\n");
         }
     }
 
@@ -72,12 +62,379 @@ void scan_i2c()
     }
 }
 
-void clock_ctrl_init() {
-    gpio_init(CLOCK_CTRL_PIN);
-    gpio_set_dir(CLOCK_CTRL_PIN, GPIO_OUT);
-    //gpio_set_function(CLOCK_CTRL_PIN, GPIO_FUNC_GPCK);  //GPIO 10 jako clock output
+void dump_all_regs(i2c_inst_t *i2c)
+{
+    uint8_t data;
 
-    gpio_put(CLOCK_CTRL_PIN, 0);
+    printf("\n==============================\n");
+    printf("DUMP REJESTROW 8T49N241\n");
+    printf("==============================\n");
+
+
+    // ========================================
+    // REJESTRY KONFIGURACYJNE
+    // 0x0000 - 0x007B
+    // ========================================
+
+    printf("\nCONFIG REGS\n\n");
+
+    for(uint16_t reg = 0x0000;
+        reg <= 0x007B;
+        reg++)
+    {
+        if(i2c_read_reg16(
+            i2c,
+            DEVICE_ADDR,
+            reg,
+            &data,
+            1
+        ))
+        {
+            printf(
+                "REG[0x%04X] = 0x%02X\n",
+                reg,
+                data
+            );
+        }
+        else
+        {
+            printf(
+                "REG[0x%04X] = READ ERROR\n",
+                reg
+            );
+        }
+
+        sleep_us(100);
+    }
+
+
+    // ========================================
+    // REJESTRY STATUSOWE
+    // 0x0200 - 0x0212
+    // ========================================
+
+    printf("\nSTATUS REGS\n\n");
+
+    for(uint16_t reg = 0x0200;
+        reg <= 0x0212;
+        reg++)
+    {
+        if(i2c_read_reg16(
+            i2c,
+            DEVICE_ADDR,
+            reg,
+            &data,
+            1
+        ))
+        {
+            printf(
+                "REG[0x%04X] = 0x%02X\n",
+                reg,
+                data
+            );
+        }
+        else
+        {
+            printf(
+                "REG[0x%04X] = READ ERROR\n",
+                reg
+            );
+        }
+
+        sleep_us(100);
+    }
+
+    printf("\nDUMP COMPLETE\n");
+}
+bool device_force_freerun_mode(
+    i2c_inst_t *i2c
+)
+{
+    uint8_t val;
+
+    printf("Ustawianie SYNTHESIZER/FREERUN...\n");
+
+
+    // ========================================
+    // REG 0x0069 = 0x1A
+    // SYN_MODE = 1
+    // ========================================
+
+    val = 0x1A;
+
+    if(!i2c_write_reg16(
+        i2c,
+        DEVICE_ADDR,
+        0x0069,
+        &val,
+        1
+    ))
+    {
+        printf("REG 0x0069 write error\n");
+        return false;
+    }
+
+    printf("SYN_MODE ustawiony\n");
+
+
+    // ========================================
+    // REG 0x000A = 0x31
+    // STATE = freerun
+    // ========================================
+
+    val = 0x31;
+
+    if(!i2c_write_reg16(
+        i2c,
+        DEVICE_ADDR,
+        0x000A,
+        &val,
+        1
+    ))
+    {
+        printf("REG 0x000A write error\n");
+        return false;
+    }
+
+    printf("Freerun ustawiony\n");
+
+
+    // ========================================
+    // PLL_SYN = 1
+    // ========================================
+
+    val = 0x80;
+
+    if(!i2c_write_reg16(
+        i2c,
+        DEVICE_ADDR,
+        0x0063,
+        &val,
+        1
+    ))
+    {
+        printf("PLL_SYN set error\n");
+        return false;
+    }
+
+    sleep_ms(10);
+
+
+    // ========================================
+    // PLL_SYN = 0
+    // ========================================
+
+    val = 0x00;
+
+    if(!i2c_write_reg16(
+        i2c,
+        DEVICE_ADDR,
+        0x0063,
+        &val,
+        1
+    ))
+    {
+        printf("PLL_SYN clear error\n");
+        return false;
+    }
+
+    printf("PLL synchronized\n");
+
+    return true;
+}
+
+bool force_q1_divider(i2c_inst_t *i2c)
+{
+    uint8_t val;
+
+    printf("Setting Q1 divider...\n");
+
+
+    // ========================================
+    // N_Q1 = 8
+    // REAL DIV = 16
+    // ========================================
+
+    val = 0x00;
+
+    i2c_write_reg16(
+        i2c,
+        DEVICE_ADDR,
+        0x0042,
+        &val,
+        1
+    );
+
+    val = 0x00;
+
+    i2c_write_reg16(
+        i2c,
+        DEVICE_ADDR,
+        0x0043,
+        &val,
+        1
+    );
+
+    val = 0x08;
+
+    i2c_write_reg16(
+        i2c,
+        DEVICE_ADDR,
+        0x0044,
+        &val,
+        1
+    );
+
+    printf("N_Q1 = 8\n");
+
+
+    // ========================================
+    // FRACTIONAL = 0
+    // ========================================
+
+    val = 0x00;
+
+    for(uint16_t reg = 0x0057;
+        reg <= 0x005A;
+        reg++)
+    {
+        i2c_write_reg16(
+            i2c,
+            DEVICE_ADDR,
+            reg,
+            &val,
+            1
+        );
+    }
+
+    printf("Fractional divider cleared\n");
+
+
+    // ========================================
+    // DSM_INT = 70
+    // VCO = 3500 MHz
+    // 25 MHz crystal
+    // doubler ON -> 50 MHz ref
+    // 50 MHz * 70 = 3500 MHz
+    // ========================================
+
+    printf("Setting DSM_INT = 70...\n");
+
+    val = 0x00;
+
+    i2c_write_reg16(
+        i2c,
+        DEVICE_ADDR,
+        0x0025,
+        &val,
+        1
+    );
+
+    val = 0x46;
+
+    i2c_write_reg16(
+        i2c,
+        DEVICE_ADDR,
+        0x0026,
+        &val,
+        1
+    );
+
+    printf("VCO target = 3500 MHz\n");
+
+
+    // ========================================
+    // CALRST TOGGLE
+    // ========================================
+
+    printf("Running VCO calibration...\n");
+
+    val = 0x01;
+
+    i2c_write_reg16(
+        i2c,
+        DEVICE_ADDR,
+        0x0070,
+        &val,
+        1
+    );
+
+    sleep_ms(10);
+
+    val = 0x00;
+
+    i2c_write_reg16(
+        i2c,
+        DEVICE_ADDR,
+        0x0070,
+        &val,
+        1
+    );
+
+    printf("VCO calibration done\n");
+
+
+    // ========================================
+    // PLL_SYN
+    // ========================================
+
+    val = 0x80;
+
+    i2c_write_reg16(
+        i2c,
+        DEVICE_ADDR,
+        0x0063,
+        &val,
+        1
+    );
+
+    sleep_ms(10);
+
+    val = 0x00;
+
+    i2c_write_reg16(
+        i2c,
+        DEVICE_ADDR,
+        0x0063,
+        &val,
+        1
+    );
+
+    printf("PLL_SYN done\n");
+
+
+    // ========================================
+    // CLEAR LOL_INT
+    // ========================================
+
+    val = 0x40;
+
+    i2c_write_reg16(
+        i2c,
+        DEVICE_ADDR,
+        0x0200,
+        &val,
+        1
+    );
+
+    printf("LOL_INT cleared\n");
+
+
+    // ========================================
+    // WAIT FOR LOCK
+    // ========================================
+
+    sleep_ms(100);
+
+    printf("PLL should now lock\n");
+
+    return true;
+}
+
+
+void clock_ctrl_init() {
+
+clock_gpio_init(21, CLOCKS_CLK_GPOUT0_CTRL_AUXSRC_VALUE_CLK_SYS, 10000000);
 }
 static inline void clock_stop_fast() {
     sio_hw->gpio_clr = (1u << CLOCK_CTRL_PIN);
@@ -121,19 +478,7 @@ int main()
                 
                 // Przetworzenie komendy
                 if (strncmp(buffer, "IMPULSE_SINGLE:", 15) == 0) {
-                    const char *channels_str = &buffer[15];
-                    
-                    for (int i = 0; channels_str[i] != '\0'; i++) {
-                        if (channels_str[i] == '1') {
-                            if (device_pulse_output(I2C_PORT, 0)) {
-                                printf("Single pulse on channel 0\n");
-                            }
-                        } else if (channels_str[i] == '2') {
-                            if (device_pulse_output(I2C_PORT, 1)) {
-                                printf("Single pulse on channel 1\n");
-                            }
-                        }
-                    }
+        
                     printf("OK\n");
                     gpio_put(LED_PIN, 1);
                     sleep_ms(500);
@@ -145,20 +490,7 @@ int main()
                     
                     if (sscanf(&buffer[19], "%u:%9s", &freq_hz, channels_str) == 2) {
                         if (freq_hz > 0) {
-                            // Ustawianie częstotliwości dla każdego kanału
-                            for (int i = 0; channels_str[i] != '\0'; i++) {
-                                if (channels_str[i] == '1') {
-                                    if (device_set_frequency(I2C_PORT, 0, freq_hz)) {
-                                        device_step_output(I2C_PORT, 0); // Włącz wyjście
-                                        printf("Set frequency %u Hz on channel 0\n", freq_hz);
-                                    }
-                                } else if (channels_str[i] == '2') {
-                                    if (device_set_frequency(I2C_PORT, 1, freq_hz)) {
-                                        device_step_output(I2C_PORT, 1); // Włącz wyjście
-                                        printf("Set frequency %u Hz on channel 1\n", freq_hz);
-                                    }
-                                }
-                            }
+
                             
                             // Proporcjonalne mruganie
                             led_blinking = true;
@@ -189,46 +521,48 @@ int main()
                     gpio_put(LED_PIN, 0);
                 }
                 else if (strncmp(buffer, "DEBUG_LED_ON", 12) == 0) {
-                    // Skonfiguruj wyjście 1 w tryb CMOS
-                    if (device_set_output_cmos(I2C_PORT, 1)) {
-                        // Włącz sygnał zegarowy na wyjściu 1 (10 MHz)
-                        if (device_set_frequency(I2C_PORT, 1, 10000000)) {
-                            printf("Ustawiona częstotliwość 10 MHz na kanale 1\n");
-                            if (device_step_output(I2C_PORT, 1)) {
-                                printf("Clock signal 10 MHz enabled on channel 1 (CMOS)\n");
-                                // Włącz zegar na GPIO 10
-                                clock_start_fast();
-                                // Włącz LED
-                                gpio_put(LED_PIN, 1);
-                            }
-                        }
+                    // Skonfiguruj wyjście 1 w tryb LVCMOS
+                    device_force_freerun_mode(i2c0);
+
+                    bool enabled = device_enable_q1_lvcmos(I2C_PORT);
+                    if (!enabled) {
+                        printf("Q1 LVCMOS enable failed\n");
+                    } else {
+                        printf("Q1 LVCMOS enabled\n");
                     }
-                    printf("OK2\n");
-                    //gpio_put(LED_PIN, 1);
-                    uint8_t dummy = 0;
-                    scan_i2c();
 
-
+                    uint8_t reg = 0;
+                    if (i2c_read_reg16(I2C_PORT, DEVICE_ADDR, 0x001F, &reg, 1)) {
+                        printf("PLL STATUS = 0x%02X\n", reg);
+                    } else {
+                        printf("PLL STATUS read failed\n");
+                    }
+force_q1_divider(i2c0);
+                    printf("OK\n");
+                    gpio_put(LED_PIN, 1);
                 }
                 else if (strncmp(buffer, "DEBUG_LED_OFF", 13) == 0) {
                     // Wyłącz sygnał zegarowy na wyjściu 1
-                    if (device_disable_output(I2C_PORT, 1)) {
-                        printf("Clock signal disabled on channel 1\n");
-                        // Wyłącz zegar na GPIO 10
-                        clock_stop_fast();
-                        // Wyłącz LED
-                        gpio_put(LED_PIN, 0);
-                    }
+                    // if (device_disable_output(I2C_PORT, 1)) {
+                    //     printf("Clock signal disabled on channel 1\n");
+                    //     // Wyłącz zegar na GPIO 10
+                    //     clock_stop_fast();
+                    //     // Wyłącz LED
+                    //     //gpio_put(LED_PIN, 0);
+                    // }
                     printf("OK\n");
-                    //gpio_put(LED_PIN, 0);
+                    gpio_put(LED_PIN, 0);
                 }
-                else if (strncmp(buffer, "READ_ID", 7) == 0) {
+                else if (strncmp(buffer, "READ_REGS", 9) == 0) {
                     uint16_t device_id2;
                     if (device_read_id(I2C_PORT, &device_id2)) {
                         printf("Device ID: 0x%04X\n", device_id2);
                     } else {
                         printf("Failed to read device ID\n");
                     }
+
+                    // Always dump registers when READ_REGS is requested.
+                    dump_all_regs(I2C_PORT);
                     printf("OK\n");
                 }
                 else {
