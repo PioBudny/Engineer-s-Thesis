@@ -2,7 +2,7 @@ Software Version: 1.18.2.24921
 Personality: 8T49N24x [7.2]
 PersonalitySemanticVersion: V1.7.4
 Part#: IDT8T49N241
-Modification Time: 30.05.2026 13:17:23
+Modification Time: 01.06.2026 11:07:36
 Port: 
 FunctionalBlocks: F8,D8,FA,DA,FC,DC,FE,DE
 FunctionalBlocksProtocolType: 
@@ -86,7 +86,7 @@ Byte#  BinaryValue HexValue Byte#
 36        00000000       00 36
 37        00000000       00 37
 38        00000000       00 38
-39        00000010       02 39
+39        00001110       0e 39
 3A        00000000       00 3A
 3B        00000000       00 3B
 3C        00000000       00 3C
@@ -100,10 +100,10 @@ Byte#  BinaryValue HexValue Byte#
 44        11101000       e8 44
 45        00000000       00 45
 46        00000000       00 46
-47        00000000       00 47
+47        00001100       0c 47
 48        00000000       00 48
 49        00000000       00 49
-4A        00000000       00 4A
+4A        00010100       14 4A
 4B        00000000       00 4B
 4C        00000000       00 4C
 4D        00000000       00 4D
@@ -120,7 +120,7 @@ Byte#  BinaryValue HexValue Byte#
 58        00000000       00 58
 59        00000000       00 59
 5A        00000000       00 5A
-5B        00000000       00 5B
+5B        00001000       08 5B
 5C        00000000       00 5C
 5D        00000000       00 5D
 5E        00000000       00 5E
@@ -128,7 +128,7 @@ Byte#  BinaryValue HexValue Byte#
 60        00000000       00 60
 61        00000000       00 61
 62        00000000       00 62
-63        00000000       00 63
+63        00000011       03 63
 64        00000000       00 64
 65        00000000       00 65
 66        00000000       00 66
@@ -140,7 +140,7 @@ Byte#  BinaryValue HexValue Byte#
 6C        00000000       00 6C
 6D        00000000       00 6D
 6E        00000000       00 6E
-6F        00001101       0d 6F
+6F        00000001       01 6F
 70        00000000       00 70
 71        00000000       00 71
 72        00000000       00 72
@@ -849,7 +849,7 @@ CALI_VCO_RO_RSVD: |*
 CALI_VCO_RO_RSVD__dflt: 
 CALRST: 0|*
 CALRST__dflt: 0
-CLK_SEL2: 0|*
+CLK_SEL2: 3|L
 CLK_SEL2__dflt: 0
 CLK_SEL3: 0|*
 CLK_SEL3__dflt: 0
@@ -945,18 +945,18 @@ EEPROM_SPEED: 0|*
 EEPROM_SPEED__dflt: 0
 EEPROMCrcPolynomial: 213|*
 EEPROMCrcPolynomial__dflt: 213
-EEPROMData: FF FF FF FF FF FE FF 00 03 00 31 00 00 01 00 00#n#01 07 00 00 07 00 00 77 6D 00 00 00 00 00 00 FF#n#FF FF FF 03 3F 00 50 00 00 00 00 00 01 00 00 10#n#00 00 00 00 00 00 00 00 00 02 00 00 00 66 66 00#n#00 00 00 03 E8 00 00 00 00 00 00 00 00 00 00 00#n#00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00#n#00 00 00 00 00 00 00 00 E9 0A 2B 20 00 00 00 0D#n#00 00 00 00 00 00 00 00 00 00 27 CC 00 00 00 00#n#00 00 00 00 |*
-EEPROMData__dflt: FF FF FF FF FF FE FF 00 03 00 31 00 00 01 00 00#n#01 07 00 00 07 00 00 77 6D 00 00 00 00 00 00 FF#n#FF FF FF 03 3F 00 50 00 00 00 00 00 01 00 00 10#n#00 00 00 00 00 00 00 00 00 02 00 00 00 66 66 00#n#00 00 00 03 E8 00 00 00 00 00 00 00 00 00 00 00#n#00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00#n#00 00 00 00 00 00 00 00 E9 0A 2B 20 00 00 00 0D#n#00 00 00 00 00 00 00 00 00 00 27 CC 00 00 00 00#n#00 00 00 00 
+EEPROMData: FF FF FF FF FF FE FF 00 03 00 31 00 00 01 00 00#n#01 07 00 00 07 00 00 77 6D 00 00 00 00 00 00 FF#n#FF FF FF 03 3F 00 50 00 00 00 00 00 01 00 00 10#n#00 00 00 00 00 00 00 00 00 0E 00 00 00 66 66 00#n#00 00 00 03 E8 00 00 0C 00 00 14 00 00 00 00 00#n#00 00 00 00 00 00 00 00 00 00 00 08 00 00 00 00#n#00 00 00 03 00 00 00 00 E9 0A 2B 20 00 00 00 01#n#00 00 00 00 00 00 00 00 00 00 27 CC 00 00 00 00#n#00 00 00 00 |*
+EEPROMData__dflt: FF FF FF FF FF FE FF 00 03 00 31 00 00 01 00 00#n#01 07 00 00 07 00 00 77 6D 00 00 00 00 00 00 FF#n#FF FF FF 03 3F 00 50 00 00 00 00 00 01 00 00 10#n#00 00 00 00 00 00 00 00 00 0E 00 00 00 66 66 00#n#00 00 00 03 E8 00 00 0C 00 00 14 00 00 00 00 00#n#00 00 00 00 00 00 00 00 00 00 00 08 00 00 00 00#n#00 00 00 03 00 00 00 00 E9 0A 2B 20 00 00 00 01#n#00 00 00 00 00 00 00 00 00 00 27 CC 00 00 00 00#n#00 00 00 00 
 EEPROMPadding: 0|*
 EEPROMPadding__dflt: 0
 Effective_Q0_Output_Divider: |*
 Effective_Q0_Output_Divider__dflt: 
 Effective_Q1_Output_Divider: 2000|*
 Effective_Q1_Output_Divider__dflt: 2000
-Effective_Q2_Output_Divider: |*
-Effective_Q2_Output_Divider__dflt: 
-Effective_Q3_Output_Divider: |*
-Effective_Q3_Output_Divider__dflt: 
+Effective_Q2_Output_Divider: 25|*
+Effective_Q2_Output_Divider__dflt: 25
+Effective_Q3_Output_Divider: 40|*
+Effective_Q3_Output_Divider__dflt: 40
 EXTLOS_RO_RSVD: 0|*
 EXTLOS_RO_RSVD__dflt: 0
 FASTLCK: 1|*
@@ -1119,12 +1119,12 @@ M1_2V5STRT_RSVD: 0|*
 M1_2V5STRT_RSVD__dflt: 0
 M1_3V3STRT_RSVD: 0|*
 M1_3V3STRT_RSVD__dflt: 0
-Master_Codes_String_1: 0b1111100	0b1010000	OTP	25.0	0	DIS	DIS	4000.0	25Hz	CN/+/off	PLL		CN/+/on 	PLL	2000	CN/+/off	PLL		CN/+/off	PLL		In	In	In	In	|*
-Master_Codes_String_1__dflt: 0b1111100	0b1010000	OTP	25.0	0	DIS	DIS	4000.0	25Hz	CN/+/off	PLL		CN/+/on 	PLL	2000	CN/+/off	PLL		CN/+/off	PLL		In	In	In	In	
+Master_Codes_String_1: 0b1111100	0b1010000	OTP	25.0	0	DIS	DIS	4000.0	25Hz	CN/+/off	PLL		CN/+/on 	PLL	2000	CN/+/on 	XTL	25.0	CN/+/on 	PLL	40.0	In	In	In	In	|*
+Master_Codes_String_1__dflt: 0b1111100	0b1010000	OTP	25.0	0	DIS	DIS	4000.0	25Hz	CN/+/off	PLL		CN/+/on 	PLL	2000	CN/+/on 	XTL	25.0	CN/+/on 	PLL	40.0	In	In	In	In	
 Master_Codes_String_1_Desc: UFT Base Add	EEPROM Base Add	Boot From	Crystal Freq	PLL	Ref 0 Freq	Ref 1 Freq	VCO Freq	Lck Loop BW	Q0 Type/Invt/En	Q0 Source	Q0 Divide Ratio	Q1 Type/Invt/En	Q1 Source	Q1 Divide Ratio	Q2 Type/Invt/En	Q2 Source	Q2 Divide Ratio	Q3 Type/Invt/En	Q3 Source	Q3 Divide Ratio	GPIO 0 Dir	GPIO 1 Dir	GPIO 2 Dir	GPIO 3 Dir|*
 Master_Codes_String_1_Desc__dflt: UFT Base Add	EEPROM Base Add	Boot From	Crystal Freq	PLL	Ref 0 Freq	Ref 1 Freq	VCO Freq	Lck Loop BW	Q0 Type/Invt/En	Q0 Source	Q0 Divide Ratio	Q1 Type/Invt/En	Q1 Source	Q1 Divide Ratio	Q2 Type/Invt/En	Q2 Source	Q2 Divide Ratio	Q3 Type/Invt/En	Q3 Source	Q3 Divide Ratio	GPIO 0 Dir	GPIO 1 Dir	GPIO 2 Dir	GPIO 3 Dir
-Master_Codes_String_2: I2C	1-Byte			-					N/A	N/A		2.0	N/A		N/A	N/A		N/A	N/A		GPI	GPI	GPI	GPI	|*
-Master_Codes_String_2__dflt: I2C	1-Byte			-					N/A	N/A		2.0	N/A		N/A	N/A		N/A	N/A		GPI	GPI	GPI	GPI	
+Master_Codes_String_2: I2C	1-Byte			-					N/A	N/A		2.0	N/A		1.0	N/A		100.0	N/A		GPI	GPI	GPI	GPI	|*
+Master_Codes_String_2__dflt: I2C	1-Byte			-					N/A	N/A		2.0	N/A		1.0	N/A		100.0	N/A		GPI	GPI	GPI	GPI	
 Master_Codes_String_2_Desc: I2C/SPI	EEPROM Addr Bytes								Q0 Freq	Q0 Phase Offset		Q1 Freq	Q1 Phase Offset		Q2 Freq	Q2 Phase Offset		Q3 Freq	Q3 Phase Offset		GPIO0 Func	GPIO1 Func	GPIO2 Func	GPIO3 Func	|*
 Master_Codes_String_2_Desc__dflt: I2C/SPI	EEPROM Addr Bytes								Q0 Freq	Q0 Phase Offset		Q1 Freq	Q1 Phase Offset		Q2 Freq	Q2 Phase Offset		Q3 Freq	Q3 Phase Offset		GPIO0 Func	GPIO1 Func	GPIO2 Func	GPIO3 Func	
 MGN2STRT_RSVD: 0|*
@@ -1145,10 +1145,10 @@ NBOOT_OTP: 0|*
 NBOOT_OTP__dflt: 0
 NFRAC_Q1: 0|*
 NFRAC_Q1__dflt: 0
-NFRAC_Q2: |*
-NFRAC_Q2__dflt: 
-NFRAC_Q3: |*
-NFRAC_Q3__dflt: 
+NFRAC_Q2: 134217728|*
+NFRAC_Q2__dflt: 134217728
+NFRAC_Q3: 0|*
+NFRAC_Q3__dflt: 0
 NFRAC_RSVD: 0|*
 NFRAC_RSVD__dflt: 0
 NO_REF_RO_RSVD: 0|*
@@ -1161,12 +1161,12 @@ NS1_Q1: 0|*
 NS1_Q1__dflt: 0
 NS1_Q1_Details: In the 8T49N241, the NS1_Q1 and NS2_Q1 bitsets are overridden; NS1_Q1 contains the upper bits of N_Q1, and NS2_Q1 contains the lower bits.|L
 NS1_Q1_Details__dflt: 
-NS1_Q2: |*
-NS1_Q2__dflt: 
+NS1_Q2: 0|*
+NS1_Q2__dflt: 0
 NS1_Q2_Details: In the 8T49N241, the NS1_Q2 and NS2_Q2 bitsets are overridden; NS1_Q2 contains the upper bits of N_Q2, and NS2_Q2 contains the lower bits.|L
 NS1_Q2_Details__dflt: 
-NS1_Q3: |*
-NS1_Q3__dflt: 
+NS1_Q3: 0|*
+NS1_Q3__dflt: 0
 NS1_Q3_Details: In the 8T49N241, the NS1_Q3 and NS2_Q3 bitsets are overridden; NS1_Q3 contains the upper bits of N_Q3, and NS2_Q3 contains the lower bits.|L
 NS1_Q3_Details__dflt: 
 NS2_Q0: |*
@@ -1175,12 +1175,12 @@ NS2_Q1: 1000|*
 NS2_Q1__dflt: 1000
 NS2_Q1_Details: In the 8T49N241, the NS1_Q1 and NS2_Q1 bitsets are overridden; NS1_Q1 contains the upper bits of N_Q1, and NS2_Q1 contains the lower bits.|L
 NS2_Q1_Details__dflt: 
-NS2_Q2: |*
-NS2_Q2__dflt: 
+NS2_Q2: 12|*
+NS2_Q2__dflt: 12
 NS2_Q2_Details: In the 8T49N241, the NS1_Q2 and NS2_Q2 bitsets are overridden; NS1_Q2 contains the upper bits of N_Q2, and NS2_Q2 contains the lower bits.|L
 NS2_Q2_Details__dflt: 
-NS2_Q3: |*
-NS2_Q3__dflt: 
+NS2_Q3: 20|*
+NS2_Q3__dflt: 20
 NS2_Q3_Details: In the 8T49N241, the NS1_Q3 and NS2_Q3 bitsets are overridden; NS1_Q3 contains the upper bits of N_Q3, and NS2_Q3 contains the lower bits.|L
 NS2_Q3_Details__dflt: 
 OneBytePadding: 0|*
@@ -1205,18 +1205,18 @@ OUTEN0: 0|*
 OUTEN0__dflt: 0
 OUTEN1: 1|*
 OUTEN1__dflt: 1
-OUTEN2: 0|*
-OUTEN2__dflt: 0
-OUTEN3: 0|*
-OUTEN3__dflt: 0
+OUTEN2: 1|L
+OUTEN2__dflt: 1
+OUTEN3: 1|*
+OUTEN3__dflt: 1
 OutFreqErr0: |*
 OutFreqErr0__dflt: 
 OutFreqErr1: 0|*
 OutFreqErr1__dflt: 0
-OutFreqErr2: |*
-OutFreqErr2__dflt: 
-OutFreqErr3: |*
-OutFreqErr3__dflt: 
+OutFreqErr2: 0|*
+OutFreqErr2__dflt: 0
+OutFreqErr3: 0|*
+OutFreqErr3__dflt: 0
 Outmode_Global: 3|L
 Outmode_Global__dflt: 1
 OUTMODE0: 3|*
@@ -1245,19 +1245,19 @@ OutputFrequency1_Base: 2|L
 OutputFrequency1_Base__dflt: 
 OutputFrequency1_Label: |*
 OutputFrequency1_Label__dflt: 
-OutputFrequency2: |*
-OutputFrequency2__dflt: 
-OutputFrequency2_actual: |*
-OutputFrequency2_actual__dflt: 
-OutputFrequency2_Base: |*
+OutputFrequency2: 1|*
+OutputFrequency2__dflt: 1
+OutputFrequency2_actual: 1|*
+OutputFrequency2_actual__dflt: 1
+OutputFrequency2_Base: 1|L
 OutputFrequency2_Base__dflt: 
 OutputFrequency2_Label: |*
 OutputFrequency2_Label__dflt: 
-OutputFrequency3: |*
-OutputFrequency3__dflt: 
-OutputFrequency3_actual: |*
-OutputFrequency3_actual__dflt: 
-OutputFrequency3_Base: |*
+OutputFrequency3: 100|*
+OutputFrequency3__dflt: 100
+OutputFrequency3_actual: 100|*
+OutputFrequency3_actual__dflt: 100
+OutputFrequency3_Base: 100|L
 OutputFrequency3_Base__dflt: 
 OutputFrequency3_Label: |*
 OutputFrequency3_Label__dflt: 
@@ -1337,10 +1337,10 @@ Q0_DIS: 1|*
 Q0_DIS__dflt: 1
 Q1_DIS: 0|*
 Q1_DIS__dflt: 0
-Q2_DIS: 1|*
-Q2_DIS__dflt: 1
-Q3_DIS: 1|*
-Q3_DIS__dflt: 1
+Q2_DIS: 0|*
+Q2_DIS__dflt: 0
+Q3_DIS: 0|*
+Q3_DIS__dflt: 0
 RDOFS_RO_RSVD: |*
 RDOFS_RO_RSVD__dflt: 
 REF_PRI: 0|*
@@ -1470,7 +1470,7 @@ xtal_in_frequency__dflt: 49.152
 
 =========================================================
 All registers:
-09 50 00 60 60 01 7c 01 03 00 31 00 00 01 00 00 01 07 00 00 07 00 00 77 6d 00 00 00 00 00 00 ff ff ff ff 03 3f 00 50 00 00 00 00 00 01 00 00 10 00 00 00 00 00 00 00 00 00 02 00 00 00 66 66 00 00 00 00 03 e8 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 e9 0a 2b 20 00 00 00 0d 00 00 00 00 00 00 00 00 00 00 27 cc 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 85 00 00 9c 01 d4 02 71 00 00 00 00 00 83 00 10 02 08 8c
+09 50 00 60 60 01 7c 01 03 00 31 00 00 01 00 00 01 07 00 00 07 00 00 77 6d 00 00 00 00 00 00 ff ff ff ff 03 3f 00 50 00 00 00 00 00 01 00 00 10 00 00 00 00 00 00 00 00 00 0e 00 00 00 66 66 00 00 00 00 03 e8 00 00 0c 00 00 14 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 00 00 00 00 00 00 00 03 00 00 00 00 e9 0a 2b 20 00 00 00 01 00 00 00 00 00 00 00 00 00 00 27 cc 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 85 00 00 9c 01 d4 02 71 00 00 00 00 00 83 00 10 02 08 8c
 =========================================================
 
 ###################################################################
@@ -1482,10 +1482,10 @@ I2C/SPI	EEPROM Addr Bytes								Q0 Freq	Q0 Phase Offset		Q1 Freq	Q1 Phase Offse
 
 Paste directly into the spreadsheet
 
-0b1111100	0b1010000	OTP	25.0	0	DIS	DIS	4000.0	25Hz	CN/+/off	PLL		CN/+/on 	PLL	2000	CN/+/off	PLL		CN/+/off	PLL		In	In	In	In	
-I2C	1-Byte			-					N/A	N/A		2.0	N/A		N/A	N/A		N/A	N/A		GPI	GPI	GPI	GPI	
+0b1111100	0b1010000	OTP	25.0	0	DIS	DIS	4000.0	25Hz	CN/+/off	PLL		CN/+/on 	PLL	2000	CN/+/on 	XTL	25.0	CN/+/on 	PLL	40.0	In	In	In	In	
+I2C	1-Byte			-					N/A	N/A		2.0	N/A		1.0	N/A		100.0	N/A		GPI	GPI	GPI	GPI	
 
 ###################################################################
 
 ***
-ee8c1c78
+e5f4a0fe
