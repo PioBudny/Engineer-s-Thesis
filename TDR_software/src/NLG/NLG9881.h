@@ -24,7 +24,7 @@
 // Serial Interface Control
 #define REG_SERIAL_INTF_ADDR      0x0006 // R/W  - Adrres I2C: b[6:2] - (I2C base addres, Default - 0x7C), b[1] - (S_A1 value) b[0] - (S_A0 value) 
 #define REG_SERIAL_INTF_RSVD      0x0007 // R/W  - Reserved: b[7:1] (Always must be 0), b[0] (always must be 1)
-
+#define REG_DPLL_CTRL_0           0x0008 // R/W
 // Digital PLL Control
 #define REG_DPLL_PRIORITY_CTRL    0x0009 // R/W - Input Priority: b0 (0=CLK0, 1=CLK1), Default: 0x00
 #define REG_DPLL_STATE_CTRL       0x000A // R/W - PLL State: b[1:0] (0=Auto, 1=Freerun, 2=Normal, 3=Holdover), b6 (REFDIS1), b5 (REFDIS0), Default: 0x00
@@ -174,6 +174,7 @@ bool i2c_write_reg16(i2c_inst_t *i2c, uint8_t addr, uint16_t reg, uint8_t *data,
 bool i2c_read_reg16(i2c_inst_t *i2c, uint8_t addr, uint16_t reg, uint8_t *data, size_t len);
 void dump_all_regs(i2c_inst_t *i2c);
 bool pll_enable_q1_led(i2c_inst_t *i2c);
+void Flag_Clear(i2c_inst_t *i2c);
 bool pll_load_tcs(i2c_inst_t *i2c);
 
 

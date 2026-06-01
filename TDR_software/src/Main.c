@@ -144,7 +144,7 @@ int main()
                         break;
 
                     case CMD_DEBUG_LED_ON: {
-                        pll_load_tcs(I2C_PORT);
+                        //pll_load_tcs(I2C_PORT);
 
                         printf("OK\n");
                         gpio_put(LED_PIN, 1);
@@ -152,6 +152,7 @@ int main()
                     }
 
                     case CMD_DEBUG_LED_OFF:
+                        Flag_Clear(I2C_PORT);
                         printf("OK\n");
                         gpio_put(LED_PIN, 0);
                         break;
