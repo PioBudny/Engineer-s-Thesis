@@ -11,20 +11,9 @@ void i2c_device_init(i2c_inst_t *i2c, uint sda, uint scl) {
     gpio_pull_up(sda);
     gpio_pull_up(scl);
 
-    sleep_ms(100);
+    sleep_ms(200);
 }
 
-// odczyt ID urządzenia
-bool device_read_id(i2c_inst_t *i2c, uint16_t *id) {
-    uint8_t data[2];
-
-    if (!i2c_read_reg16(i2c, DEVICE_ADDR, 0x0002, data, 2)) {
-        return false;
-    }
-
-    *id = (data[0] << 8) | data[1];
-    return true;
-}
 
 // zapis do rejestru 16-bit
 bool i2c_write_reg16(i2c_inst_t *i2c, uint8_t addr, uint16_t reg, uint8_t *data, size_t len) {
@@ -61,269 +50,448 @@ bool i2c_read_reg16(i2c_inst_t *i2c, uint8_t addr, uint16_t reg, uint8_t *data, 
     return true;
 }
 
-bool device_set_output_cmos(i2c_inst_t *i2c, uint8_t channel) {
-    if (channel > 3) return false;
+static const struct
+{
+    uint16_t reg;
+    uint8_t value;
+} pll_cfg[] =
+{
+    {0x0008, 0x03},
+    {REG_DPLL_PRIORITY_CTRL, 0x00},
+    {REG_DPLL_STATE_CTRL, 0x31},
+    {REG_DPLL_PRE0_MSB, 0x00},
+    {REG_DPLL_PRE0_MID, 0x00},
+    {REG_DPLL_PRE0_LSB, 0x01},
+    {REG_DPLL_PRE1_MSB, 0x00},
+    {REG_DPLL_PRE1_MID, 0x00},
+    {REG_DPLL_PRE1_LSB, 0x01},
+    {REG_DPLL_M1_0_MSB, 0x07},
+    {REG_DPLL_M1_0_MID, 0x00},
+    {REG_DPLL_M1_0_LSB, 0x00},
+    {REG_DPLL_M1_1_MSB, 0x07},
+    {REG_DPLL_M1_1_MID, 0x00},
+    {REG_DPLL_M1_1_LSB, 0x00},
+    {REG_DPLL_BW_CTRL, 0x77},
+    {REG_DPLL_DAMP_GAIN_CTRL, 0x6D},
+    {0x0019, 0x00},
+    {0x001A, 0x00},
+    {0x001B, 0x00},
+    {0x001C, 0x00},
+    {0x001D, 0x00},
+    {0x001E, 0x00},
+    {0x001F, 0xFF},
+    {0x0020, 0xFF},
+    {0x0021, 0xFF},
+    {0x0022, 0xFF},
+    {REG_DPLL_HOLD_FASTLCK, 0x03},
+    {REG_DPLL_LOCK_WIN, 0x3F},
+    {REG_DPLL_DSM_INT_MSB, 0x00},
+    {REG_DPLL_DSM_INT_LSB, 0x50},
+    {0x0027, 0x00},
+    {REG_DPLL_DSM_FRAC_MSB, 0x00},
+    {REG_DPLL_DSM_FRAC_MID, 0x00},
+    {REG_DPLL_DSM_FRAC_LSB, 0x00},
+    {0x002B, 0x00},
+    {0x002C, 0x01},
+    {0x002D, 0x00},
+    {0x002E, 0x00},
+    {REG_DPLL_DSM_ORD_GAIN, 0x10},
+    {REG_GPIO_DIR_CTRL, 0x00},
+    {REG_GPI_SEL_2, 0x00},
+    {REG_GPI_SEL_1, 0x00},
+    {REG_GPI_SEL_0, 0x00},
+    {REG_GPO_SEL_2, 0x00},
+    {REG_GPO_SEL_1, 0x00},
+    {REG_GPO_SEL_0, 0x00},
+    {0x0037, 0x00},
+    {REG_GPO_OUTPUT_VAL, 0x00},
+    {REG_OUTPUT_EN_CTRL, 0x02},
+    {REG_OUTPUT_POL_CTRL, 0x00},
+    {0x003B, 0x00},
+    {0x003C, 0x00},
+    {REG_OUTPUT_MODE_3_2, 0x66},
+    {REG_OUTPUT_MODE_1_0, 0x66},
+    {REG_DIV_INT_Q0_CTRL, 0x00},
+    {REG_DIV_INT_Q0_NS2_MSB, 0x00},
+    {REG_DIV_INT_Q0_NS2_LSB, 0x00},
+    {REG_DIV_INT_Q1_MSB, 0x00},
+    {REG_DIV_INT_Q1_MID, 0x03},
+    {REG_DIV_INT_Q1_LSB, 0xE8},
+    {REG_DIV_INT_Q2_MSB, 0x00},
+    {REG_DIV_INT_Q2_MID, 0x00},
+    {REG_DIV_INT_Q2_LSB, 0x00},
+    {REG_DIV_INT_Q3_MSB, 0x00},
+    {REG_DIV_INT_Q3_MID, 0x00},
+    {REG_DIV_INT_Q3_LSB, 0x00},
+    {0x004B, 0x00},
+    {0x004C, 0x00},
+    {0x004D, 0x00},
+    {0x004E, 0x00},
+    {0x004F, 0x00},
+    {0x0050, 0x00},
+    {0x0051, 0x00},
+    {0x0052, 0x00},
+    {0x0053, 0x00},
+    {0x0054, 0x00},
+    {0x0055, 0x00},
+    {0x0056, 0x00},
+    {REG_DIV_FRAC_Q1_MSB, 0x00},
+    {REG_DIV_FRAC_Q1_MID1, 0x00},
+    {REG_DIV_FRAC_Q1_MID0, 0x00},
+    {REG_DIV_FRAC_Q1_LSB, 0x00},
+    {REG_DIV_FRAC_Q2_MSB, 0x00},
+    {REG_DIV_FRAC_Q2_MID1, 0x00},
+    {REG_DIV_FRAC_Q2_MID0, 0x00},
+    {REG_DIV_FRAC_Q2_LSB, 0x00},
+    {REG_DIV_FRAC_Q3_MSB, 0x00},
+    {REG_DIV_FRAC_Q3_MID1, 0x00},
+    {REG_DIV_FRAC_Q3_MID0, 0x00},
+    {REG_DIV_FRAC_Q3_LSB, 0x00},
+    {REG_OUT_CLK_SRC_SYNC, 0x00},
+    {REG_APLL_CTRL_0, 0xE9},
+    {REG_APLL_CTRL_1, 0x0A},
+    {REG_APLL_CTRL_2, 0x2B},
+    {0x006B, 0x20},
+    {REG_PWR_DN_CTRL_0, 0x00},
+    {REG_PWR_DN_CTRL_1, 0x00},
+    {0x006E, 0x00},
+    {REG_PWR_DN_CTRL_2, 0x0D},
+    {REG_PWR_DN_CTRL_3, 0x00},
+    {REG_IN_MON_LOS0_MSB, 0x00},
+    {REG_IN_MON_LOS0_MID, 0x00},
+    {REG_IN_MON_LOS0_LSB, 0x00},
+    {REG_IN_MON_LOS1_MSB, 0x00},
+    {REG_IN_MON_LOS1_MID, 0x00},
+    {REG_IN_MON_LOS1_LSB, 0x00},
+    {0x0077, 0x00},
+    {0x0078, 0x00},
+    {REG_INT_EN_CTRL, 0x00},
+    {REG_FACTORY_SETTING_0, 0x27},
+    {REG_FACTORY_SETTING_1, 0xCC},
+};
 
-    uint16_t reg_addr;
-    uint8_t reg;
-    uint8_t shift;
+//Wypisuje wszystkie rejestry
+void dump_all_regs(i2c_inst_t *i2c)
+{
+    uint8_t data;
 
-    if (channel == 0) {
-        reg_addr = 0x003E;
-        shift = 0;
-    } else if (channel == 1) {
-        reg_addr = 0x003E;
-        shift = 4;
-    } else if (channel == 2) {
-        reg_addr = 0x003D;
-        shift = 0;
-    } else {
-        reg_addr = 0x003D;
-        shift = 4;
+    printf("\n==============================\n");
+    printf("Rejestry 8T49N241\n");
+    printf("==============================\n");
+
+
+    // ========================================
+    // REJESTRY KONFIGURACYJNE
+    // 0x0000 - 0x007B
+    // ========================================
+
+    printf("\nCONFIG REGS\n\n");
+
+    for(uint16_t reg = 0x0000;
+        reg <= 0x007B;
+        reg++)
+    {
+        if(i2c_read_reg16(
+            i2c,
+            DEVICE_ADDR,
+            reg,
+            &data,
+            1
+        ))
+        {
+            printf(
+                "REG[0x%04X] = 0x%02X\n",
+                reg,
+                data
+            );
+        }
+        else
+        {
+            printf(
+                "REG[0x%04X] = READ ERROR\n",
+                reg
+            );
+        }
+
+        sleep_us(100);
     }
 
-    if (!i2c_read_reg16(i2c, DEVICE_ADDR, reg_addr, &reg, 1)) {
-        return false;
+
+    // ========================================
+    // REJESTRY STATUSOWE
+    // 0x0200 - 0x0212
+    // ========================================
+
+    printf("\nSTATUS REGS\n\n");
+
+    for(uint16_t reg = 0x0200;
+        reg <= 0x0212;
+        reg++)
+    {
+        if(i2c_read_reg16(
+            i2c,
+            DEVICE_ADDR,
+            reg,
+            &data,
+            1
+        ))
+        {
+            printf(
+                "REG[0x%04X] = 0x%02X\n",
+                reg,
+                data
+            );
+        }
+        else
+        {
+            printf(
+                "REG[0x%04X] = READ ERROR\n",
+                reg
+            );
+        }
+
+        sleep_us(100);
     }
 
-    reg &= ~(0b111 << shift);
-    reg |= (0b011 << shift);
-
-    return i2c_write_reg16(i2c, DEVICE_ADDR, reg_addr, &reg, 1);
+    printf("\nDUMP COMPLETE\n");
 }
 
-bool device_step_output(i2c_inst_t *i2c, uint8_t channel) {
-    if (channel > 3) return false;
-
+bool pll_enable_q1_led(i2c_inst_t *i2c)
+{
     uint8_t reg;
+    uint8_t status;
 
-    // odczytaj aktualny OUTEN
-    if (!i2c_read_reg16(i2c, DEVICE_ADDR, 0x0039, &reg, 1)) {
+    printf("=====================================\n");
+    printf("Configuring Q1 LED output\n");
+    printf("=====================================\n");
+
+    // ========================================
+    // 1. SYNTHESIZER MODE
+    // ========================================
+
+    printf("Setting SYN_MODE...\n");
+
+    if (!i2c_read_reg16(i2c, DEVICE_ADDR, REG_APLL_CTRL_1, &reg, 1))
+    {
+        printf("ERROR: Cannot read REG_APLL_CTRL_1\n");
         return false;
     }
 
-    // ustaw bit kanału
-    reg |= (1 << channel);
+    reg |= (1 << 4); // SYN_MODE = 1
 
-    // zapisz
-    return i2c_write_reg16(i2c, DEVICE_ADDR, 0x0039, &reg, 1);
-}
-
-bool device_pulse_output(i2c_inst_t *i2c, uint8_t channel) {
-    if (channel > 3) return false;
-
-    uint8_t reg;
-
-    // odczytaj
-    if (!i2c_read_reg16(i2c, DEVICE_ADDR, 0x0039, &reg, 1)) {
+    if (!i2c_write_reg16(i2c, DEVICE_ADDR, REG_APLL_CTRL_1, &reg, 1))
+    {
+        printf("ERROR: Cannot write REG_APLL_CTRL_1\n");
         return false;
     }
 
-    // włącz
-    uint8_t reg_on = reg | (1 << channel);
-    if (!i2c_write_reg16(i2c, DEVICE_ADDR, 0x0039, &reg_on, 1)) {
+    printf("SYN_MODE enabled\n");
+
+    // ========================================
+    // 2. FORCE FREERUN
+    // ========================================
+
+    printf("Setting FREERUN mode...\n");
+
+    if (!i2c_read_reg16(i2c, DEVICE_ADDR, REG_DPLL_STATE_CTRL, &reg, 1))
+    {
+        printf("ERROR: Cannot read REG_DPLL_STATE_CTRL\n");
         return false;
     }
 
-    // natychmiast wyłącz
-    uint8_t reg_off = reg & ~(1 << channel);
-    if (!i2c_write_reg16(i2c, DEVICE_ADDR, 0x0039, &reg_off, 1)) {
+    reg &= ~0x03;
+    reg |= 0x01; // STATE = FREERUN
+
+    if (!i2c_write_reg16(i2c, DEVICE_ADDR, REG_DPLL_STATE_CTRL, &reg, 1))
+    {
+        printf("ERROR: Cannot write REG_DPLL_STATE_CTRL\n");
         return false;
     }
+
+    printf("FREERUN enabled\n");
+
+    // ========================================
+    // 3. POWER UP Q1
+    // ========================================
+
+    printf("Powering up Q1...\n");
+
+    if (!i2c_read_reg16(i2c, DEVICE_ADDR, REG_PWR_DN_CTRL_2, &reg, 1))
+    {
+        printf("ERROR: Cannot read REG_PWR_DN_CTRL_2\n");
+        return false;
+    }
+
+    reg &= ~(1 << 1); // Q1_DIS = 0
+
+    if (!i2c_write_reg16(i2c, DEVICE_ADDR, REG_PWR_DN_CTRL_2, &reg, 1))
+    {
+        printf("ERROR: Cannot write REG_PWR_DN_CTRL_2\n");
+        return false;
+    }
+
+    printf("Q1 powered up\n");
+
+    // ========================================
+    // 4. ENABLE OUTPUT DRIVER
+    // ========================================
+
+    printf("Enabling Q1 driver...\n");
+
+    if (!i2c_read_reg16(i2c, DEVICE_ADDR, REG_OUTPUT_EN_CTRL, &reg, 1))
+    {
+        printf("ERROR: Cannot read REG_OUTPUT_EN_CTRL\n");
+        return false;
+    }
+
+    reg |= (1 << 1); // OUTEN1
+
+    if (!i2c_write_reg16(i2c, DEVICE_ADDR, REG_OUTPUT_EN_CTRL, &reg, 1))
+    {
+        printf("ERROR: Cannot write REG_OUTPUT_EN_CTRL\n");
+        return false;
+    }
+
+    printf("Q1 driver enabled\n");
+
+    // ========================================
+    // 5. Q1 = LVCMOS
+    // ========================================
+
+    printf("Configuring Q1 as LVCMOS...\n");
+
+    if (!i2c_read_reg16(i2c, DEVICE_ADDR, REG_OUTPUT_MODE_1_0, &reg, 1))
+    {
+        printf("ERROR: Cannot read REG_OUTPUT_MODE_1_0\n");
+        return false;
+    }
+
+    printf("Current OUTPUT_MODE_1_0 = 0x%02X\n", reg);
+
+    // Wyczyść konfigurację Q1 (D7:D4)
+    reg &= 0x0F;
+
+    // OUTMODE1 = 011 (LVCMOS)
+    reg |= (0x3 << 5);
+
+    // SE_MODE1 = 0
+    reg &= ~(1 << 4);
+
+    if (!i2c_write_reg16(i2c, DEVICE_ADDR, REG_OUTPUT_MODE_1_0, &reg, 1))
+    {
+        printf("ERROR: Cannot write REG_OUTPUT_MODE_1_0\n");
+        return false;
+    }
+
+    printf("Q1 configured as LVCMOS\n");
+    printf("OUTPUT_MODE_1_0 = 0x%02X\n", reg);
+
+    // ========================================
+    // 6. SYNCHRONIZE OUTPUT DIVIDERS
+    // ========================================
+
+    printf("Synchronizing output dividers...\n");
+
+    if (!i2c_read_reg16(i2c, DEVICE_ADDR, REG_OUT_CLK_SRC_SYNC, &reg, 1))
+    {
+        printf("ERROR: Cannot read REG_OUT_CLK_SRC_SYNC\n");
+        return false;
+    }
+
+    reg |= (1 << 7);
+
+    if (!i2c_write_reg16(i2c, DEVICE_ADDR, REG_OUT_CLK_SRC_SYNC, &reg, 1))
+    {
+        printf("ERROR: Failed to set PLL_SYN\n");
+        return false;
+    }
+
+    sleep_ms(1);
+
+    reg &= ~(1 << 7);
+
+    if (!i2c_write_reg16(i2c, DEVICE_ADDR, REG_OUT_CLK_SRC_SYNC, &reg, 1))
+    {
+        printf("ERROR: Failed to clear PLL_SYN\n");
+        return false;
+    }
+
+    printf("Output dividers synchronized\n");
+
+    // ========================================
+    // 7. STATUS CHECK
+    // ========================================
+
+    printf("Reading status registers...\n");
+
+    if (i2c_read_reg16(i2c, DEVICE_ADDR, REG_INT_STATUS_0, &status, 1))
+    {
+        printf("INT_STATUS_0 = 0x%02X\n", status);
+
+        if (status & (1 << 6))
+            printf("WARNING: LOL active\n");
+
+        if (status & (1 << 4))
+            printf("WARNING: HOLD active\n");
+
+        if (status & (1 << 1))
+            printf("WARNING: LOS1 active\n");
+
+        if (status & (1 << 0))
+            printf("WARNING: LOS0 active\n");
+    }
+
+    if (i2c_read_reg16(i2c, DEVICE_ADDR, REG_BOOT_STATUS_0, &status, 1))
+    {
+        printf("BOOT_STATUS_0 = 0x%02X\n", status);
+    }
+
+    if (i2c_read_reg16(i2c, DEVICE_ADDR, REG_BOOT_STATUS_1, &status, 1))
+    {
+        printf("BOOT_STATUS_1 = 0x%02X\n", status);
+    }
+
+    printf("=====================================\n");
+    printf("Q1 configuration complete\n");
+    printf("=====================================\n");
 
     return true;
 }
 
-// bool device_set_frequency(i2c_inst_t *i2c, uint8_t channel, uint32_t fout_hz) {
-//     if (channel > 3 || fout_hz == 0) return false;
 
-//     // STAŁE PLL (przykład)
-//     const uint32_t fvco = 2500000000ULL; // 2.5 GHz
-
-//     // oblicz divider
-//     uint32_t odiv = fvco / fout_hz;
-
-//     // ograniczenia (typowe dla takich układów)
-//     if (odiv < 1 || odiv > 0xFFFF) return false;
-
-//     uint16_t reg_addr;
-
-//     // mapowanie kanałów (sprawdź datasheet!)
-//     switch (channel) {
-//         case 0: reg_addr = 0x0050; break;
-//         case 1: reg_addr = 0x0052; break;
-//         case 2: reg_addr = 0x0054; break;
-//         case 3: reg_addr = 0x0056; break;
-//         default: return false;
-//     }
-
-//     uint8_t data[2];
-//     data[0] = (odiv >> 8) & 0xFF;
-//     data[1] = odiv & 0xFF;
-
-//     if (!i2c_write_reg16(i2c, DEVICE_ADDR, reg_addr, data, 2)) {
-//         return false;
-//     }
-
-//     // APPLY / UPDATE (bardzo ważne)
-//     uint8_t update = 0x01;
-//     if (!i2c_write_reg16(i2c, DEVICE_ADDR, 0x000F, &update, 1)) {
-//         return false;
-//     }
-
-//     return true;
-// }
-
-
-bool device_config_gpio_as_enable(i2c_inst_t *i2c) {
-    uint8_t val;
-
-    val = 0x01;
-    return i2c_write_reg16(i2c, DEVICE_ADDR, 0x0208, &val, 1);
-}
-
-bool device_disable_output(i2c_inst_t *i2c, uint8_t channel) {
-    if (channel > 3) return false;
-
-    uint8_t reg;
-
-    if (!i2c_read_reg16(i2c, DEVICE_ADDR, 0x0039, &reg, 1)) {
-        return false;
-    }
-
-    reg &= ~(1 << channel);
-
-    return i2c_write_reg16(i2c, DEVICE_ADDR, 0x0039, &reg, 1);
-}
-
-static bool device_modify_reg(i2c_inst_t *i2c, uint16_t reg, uint8_t mask, uint8_t value);
-
-bool device_enable_q1_lvcmos(
-    i2c_inst_t *i2c
-)
+bool pll_load_tcs(i2c_inst_t *i2c)
 {
-    printf("Konfiguracja Q1...\n");
+    printf("Loading TCS config...\n");
 
+for(size_t i = 0; i < sizeof(pll_cfg)/sizeof(pll_cfg[0]); i++)
+{
+    uint8_t value = pll_cfg[i].value;
 
-    // ========================================
-    // Q1_DIS = 0
-    // REG 0x006F BIT 1
-    // ========================================
-
-    if(!device_modify_reg(
-        i2c,
-        0x006F,
-        (1 << 1),
-        0
-    ))
+    if(!i2c_write_reg16(i2c,
+                        DEVICE_ADDR,
+                        pll_cfg[i].reg,
+                        &value,
+                        1))
     {
-        printf("Q1_DIS error\n");
-        return false;
+        printf("Skip reg 0x%04X\n", pll_cfg[i].reg);
     }
+}
 
-
-    // ========================================
-    // OUTMODE1 = LVCMOS
-    // REG 0x003E
-    // D6:D4 = 011
-    // ========================================
-
-    if(!device_modify_reg(
-        i2c,
-        0x003E,
-        0b01110000,
-        0b00110000
-    ))
-    {
-        printf("OUTMODE1 error\n");
-        return false;
-    }
-
-
-    // ========================================
-    // OUTEN1 = 1
-    // REG 0x0039 BIT 1
-    // ========================================
-
-    if(!device_modify_reg(
-        i2c,
-        0x0039,
-        (1 << 1),
-        (1 << 1)
-    ))
-    {
-        printf("OUTEN1 error\n");
-        return false;
-    }
-
-
-    // ========================================
-    // PLL_SYN = 1
-    // REG 0x0063 BIT 7
-    // ========================================
-
-    if(!device_modify_reg(
-        i2c,
-        0x0063,
-        (1 << 7),
-        (1 << 7)
-    ))
-    {
-        printf("PLL_SYN set error\n");
-        return false;
-    }
-
-    sleep_ms(10);
-
-
-    // ========================================
-    // PLL_SYN = 0
-    // ========================================
-
-    if(!device_modify_reg(
-        i2c,
-        0x0063,
-        (1 << 7),
-        0
-    ))
-    {
-        printf("PLL_SYN clear error\n");
-        return false;
-    }
-
-    printf("Q1 enabled in LVCMOS mode\n");
-
+    printf("Config loaded successfully\n");
     return true;
-}
 
-static bool device_modify_reg(
-    i2c_inst_t *i2c,
-    uint16_t reg,
-    uint8_t mask,
-    uint8_t value
-)
-{
-    uint8_t current;
+    uint8_t v;
 
-    if(!i2c_read_reg16(
-        i2c,
-        DEVICE_ADDR,
-        reg,
-        &current,
-        1
-    ))
-    {
-        return false;
-    }
+// Output divider sync
+i2c_read_reg16(i2c1, DEVICE_ADDR, REG_OUT_CLK_SRC_SYNC, &v, 1);
 
-    current &= ~mask;
-    current |= (value & mask);
+v |= 0x80;
 
-    return i2c_write_reg16(
-        i2c,
-        DEVICE_ADDR,
-        reg,
-        &current,
-        1
-    );
+i2c_write_reg16(i2c1, DEVICE_ADDR, REG_OUT_CLK_SRC_SYNC, &v, 1);
+
+sleep_ms(10);
+
+v &= ~0x80;
+
+i2c_write_reg16(i2c1, DEVICE_ADDR, REG_OUT_CLK_SRC_SYNC, &v, 1);
 }
