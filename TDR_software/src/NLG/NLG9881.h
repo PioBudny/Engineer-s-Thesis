@@ -136,7 +136,7 @@
 // Power Down & Monitor Control
 #define REG_PWR_DN_CTRL_0         0x006C // R/W - LOL & XTAL Control: b2(LOL Mode: 0=Lock, 1=Lock+Stable), b1(XTAL Doubler: 0=Enable, 1=Disable), Default: 0x00
 #define REG_PWR_DN_CTRL_1         0x006D // R/W - Input Power Down: b1(CLK1), b0(CLK0), 0=Enable, 1=Power Down, Default: 0x00
-#define REG_PWR_DN_CTRL_2         0x006F // R/W - Output Power Down: b[3:0] (Q3-Q0), 0=Enable, 1=Power Down & Hi-Z, Default: 0x00
+#define REG_PWR_DN_CTRL_2         0x006F // R/W - Output Power Down: b[3:0] (Q3-Q0), 0=Enable, 1=Power Down & Hi-Z
 #define REG_PWR_DN_CTRL_3         0x0070 // R/W - Block Power Down: b2(DPLL), b1(DSM), b0(APLL Calibration Reset), 0=Enable, 1=Disable, Default: 0x00
 
 // Input Monitor (LOS0)
@@ -167,15 +167,23 @@
 #define REG_BOOT_STATUS_0         0x0210 // R - Boot Status: b1(EEP_ERR - EEPROM CRC Error), b0(BOOTFAIL - EEPROM/I2C Read Failure)
 #define REG_BOOT_STATUS_1         0x0211 // R - EEPROM Status: b0(EEPDONE - EEPROM Boot Complete)
 
+typedef struct {
+    uint16_t reg;
+    uint8_t value;
+} pll_cfg_t;
+
+extern const pll_cfg_t MainPLL[];
+extern const size_t MainPLL_count;
+
+extern const pll_cfg_t Innit_NLG[];
+extern const size_t Innit_NLG_count;
 
 // podstawowe operacje
 void i2c_device_init(i2c_inst_t *i2c, uint sda, uint scl);
 bool i2c_write_reg16(i2c_inst_t *i2c, uint8_t addr, uint16_t reg, uint8_t *data, size_t len);
 bool i2c_read_reg16(i2c_inst_t *i2c, uint8_t addr, uint16_t reg, uint8_t *data, size_t len);
 void dump_all_regs(i2c_inst_t *i2c);
-bool pll_enable_q1_led(i2c_inst_t *i2c);
 void Flag_Clear(i2c_inst_t *i2c);
-bool pll_load_tcs(i2c_inst_t *i2c);
-
+bool load_tab(i2c_inst_t *i2c, const pll_cfg_t *tab, size_t count);
 
 #endif

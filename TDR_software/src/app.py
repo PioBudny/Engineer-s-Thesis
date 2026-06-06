@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 import serial
 import serial.tools.list_ports
 import time
@@ -8,6 +9,8 @@ current_port = None
 log_window = None
 log_text = None
 serial_reader_started = False
+Output_en = 0
+Selected_Frequency = 0
 
 # ===== SERIAL =====
 
@@ -110,52 +113,24 @@ def connect():
         status_label.itemconfig("led", fill="red")
         add_log(f"Connection failed: {e}")
 
-# ===== CHANNEL SELECTION =====
-
-def get_selected_channel():
-    ch1 = channel1_var.get()
-    ch2 = channel2_var.get()
-
-    if ch1 and ch2:
-        return "12", "Channel 1 and 2"
-    elif ch1:
-        return "1", "Channel 1"
-    elif ch2:
-        return "2", "Channel 2"
-    else:
-        add_log("No channel selected!")
-        return None, None
-
-# ===== KOMENDY =====
 
 def send_impulse():
+    global Output_en
+
     if not (ser and ser.is_open):
         add_log("Not connected to Pico")
         return
 
-    channel, channel_text = get_selected_channel()
-    if not channel:
+    if Output_en == 0:
+        add_log("Select Q1 or Q2 first")
         return
 
-    if single_impulse_var.get():
-        ser.write(f"IMPULSE_SINGLE:{channel}\n".encode())
-        add_log(f"Single impulse on {channel_text}")
+    q1_single = int(q1_single_impulse_var.get())
+    q2_single = int(q2_single_impulse_var.get())
 
-    elif continuous_signal_var.get():
-        try:
-            freq = float(frequency_entry.get())
-
-            if 8 <= freq <= 250:
-                scaled_freq = freq * 1000  # konwersja z kHz na Hz
-                ser.write(f"IMPULSE_CONTINUOUS:{int(scaled_freq)}:{channel}\n".encode())
-                add_log(f"Sending continuous impulses {freq}kHz on {channel_text}")
-            else:
-                frequency_label.config(text="Frequency out of range (8-250 kHz)")
-                add_log("Frequency out of range")
-
-        except ValueError:
-            frequency_label.config(text="Invalid frequency value")
-            add_log("Invalid frequency value")
+    cmd = f"IMPULSE_START,{Output_en},{q1_single},{q2_single}\n"
+    ser.write(cmd.encode())
+    add_log(f"Sent: {cmd.strip()}")
 
 
 def stop_impulse():
@@ -165,24 +140,36 @@ def stop_impulse():
     else:
         add_log("Not connected to Pico")
 
-# ===== DEBUG LED =====
 
-def debug_led_on():
+def load_configuration():
+    global Synth_mode
+
     if not (ser and ser.is_open):
         add_log("Not connected to Pico")
         return
 
-    ser.write(b"DEBUG_LED_ON\n")
-    add_log("Debug LED turned ON")
+    source_map = {"Crystal": 0, "External": 1, "PLL": 2}
 
+    q1_source = source_map[q1_source_var.get()]
+    q2_source = source_map[q2_source_var.get()]
 
-def debug_led_off():
-    if not (ser and ser.is_open):
-        add_log("Not connected to Pico")
-        return
+    q1_freq = q1_selected_frequency
+    q2_freq = q2_selected_frequency
+    
+    Synth_mode = int(
+    q1_source_var.get() == "External" or
+    q2_source_var.get() == "External"
+)
 
-    ser.write(b"DEBUG_LED_OFF\n")
-    add_log("Debug LED turned OFF")
+    cmd = (
+        f"LOAD_CONFIG,"
+        f"{Synth_mode},"
+        f"{q1_source},{q2_source},"
+        f"{q1_freq},{q2_freq}\n"
+    )
+
+    ser.write(cmd.encode())
+    add_log(f"Sent: {cmd.strip()}")
 
 
 def read_regs():
@@ -192,6 +179,15 @@ def read_regs():
     ser.write(b"READ_REGS\n")
     add_log("Requested device register dump")
 
+
+def default_config():
+    if not (ser and ser.is_open):
+        add_log("Not connected to Pico")
+        return
+    ser.write(b"DEFAULT_CONFIG\n")
+    add_log("Loaded default configuration")
+
+
 # ===== LOG =====
 
 def add_log(message):
@@ -199,28 +195,12 @@ def add_log(message):
     if log_text:
         append_log_text(message)
 
-# ===== TRYBY =====
-
-def on_single_impulse_change():
-    if single_impulse_var.get():
-        continuous_signal_var.set(False)
-        send_impulse_button.config(state=tk.NORMAL)
-    else:
-        send_impulse_button.config(state=tk.DISABLED)
-
-
-def on_continuous_signal_change():
-    if continuous_signal_var.get():
-        single_impulse_var.set(False)
-        send_impulse_button.config(state=tk.NORMAL)
-    else:
-        send_impulse_button.config(state=tk.DISABLED)
 
 # ===== GUI =====
 
 root = tk.Tk()
 root.title("TDR App")
-root.geometry("400x420")
+root.geometry("600x450")
 
 # Top frame
 top_frame = tk.Frame(root)
@@ -230,81 +210,152 @@ status_label = tk.Canvas(top_frame, width=20, height=20, bg="white", highlightth
 status_label.pack(side=tk.RIGHT, padx=5)
 status_label.create_oval(2, 2, 18, 18, fill="red", outline="black", tags="led")
 
-tk.Button(top_frame, text="Connect", command=connect).pack(side=tk.RIGHT, padx=5)
-tk.Button(top_frame, text="Open Log", command=open_log_window).pack(side=tk.RIGHT, padx=5)
+tk.Button(top_frame, text="Connect",        command=connect).pack(side=tk.RIGHT, padx=5)
+tk.Button(top_frame, text="Open Log",       command=open_log_window).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Read Registers", command=read_regs).pack(side=tk.RIGHT, padx=5)
+tk.Button(top_frame, text="Default config", command=default_config).pack(side=tk.RIGHT, padx=5)
 
-# TRYBY
-checkbox_frame = tk.Frame(root)
-checkbox_frame.pack(pady=10)
+q1_var                = tk.BooleanVar()
+q2_var                = tk.BooleanVar()
+q1_source_var         = tk.StringVar(value="Crystal")
+q2_source_var         = tk.StringVar(value="Crystal")
+q1_single_impulse_var = tk.BooleanVar()
+q2_single_impulse_var = tk.BooleanVar()
+q1_frequency_var      = tk.StringVar()
+q2_frequency_var      = tk.StringVar()
+q1_selected_frequency = 0
+q2_selected_frequency = 0
 
-single_impulse_var = tk.BooleanVar()
-continuous_signal_var = tk.BooleanVar()
 
-tk.Checkbutton(
-    checkbox_frame,
-    text="Single Impulse",
-    variable=single_impulse_var,
-    command=on_single_impulse_change
-).pack(side=tk.LEFT, padx=20)
+def get_frequency_options(source):
+    if source == "Crystal":
+        return ["1", "4"]
+    elif source == "External":
+        return ["1", "16"]
+    else:  # PLL
+        return ["25", "50", "100", "200"]
 
-tk.Checkbutton(
-    checkbox_frame,
-    text="Continuous",
-    variable=continuous_signal_var,
-    command=on_continuous_signal_change
-).pack(side=tk.LEFT, padx=20)
 
-# CHANNELS
-channel_frame = tk.Frame(root)
-channel_frame.pack(pady=10)
+def update_q1_frequency_options():
+    global q1_selected_frequency
+    options = get_frequency_options(q1_source_var.get())
+    q1_frequency_combo['values'] = options
+    if options:
+        q1_frequency_var.set(options[0])
+        update_q1_selected_frequency()
 
-channel1_var = tk.BooleanVar()
-channel2_var = tk.BooleanVar()
 
-tk.Label(channel_frame, text="Channel:").pack(side=tk.LEFT, padx=10)
+def update_q2_frequency_options():
+    global q2_selected_frequency
+    options = get_frequency_options(q2_source_var.get())
+    q2_frequency_combo['values'] = options
+    if options:
+        q2_frequency_var.set(options[0])
+        update_q2_selected_frequency()
 
-tk.Checkbutton(channel_frame, text="Channel 1", variable=channel1_var).pack(side=tk.LEFT, padx=5)
-tk.Checkbutton(channel_frame, text="Channel 2", variable=channel2_var).pack(side=tk.LEFT, padx=5)
 
-# FREQUENCY
-frequency_frame = tk.Frame(root)
-frequency_frame.pack(pady=5)
+def update_q1_selected_frequency():
+    global q1_selected_frequency
+    try:
+        q1_selected_frequency = int(q1_frequency_var.get())
+    except ValueError:
+        q1_selected_frequency = 0
 
-frequency_label = tk.Label(frequency_frame, text="Frequency (8-250 kHz):")
-frequency_label.pack(side=tk.LEFT, padx=5)
 
-frequency_entry = tk.Entry(frequency_frame, width=10)
-frequency_entry.insert(0, "100")
-frequency_entry.pack(side=tk.LEFT, padx=5)
+def update_q2_selected_frequency():
+    global q2_selected_frequency
+    try:
+        q2_selected_frequency = int(q2_frequency_var.get())
+    except ValueError:
+        q2_selected_frequency = 0
 
-# BUTTONS
+
+def update_output():
+    global Output_en
+    Output_en = 0
+    if q1_var.get():
+        Output_en |= 0b0100
+    if q2_var.get():
+        Output_en |= 0b1000
+    if Output_en == 0:
+        add_log("No outputs selected")
+    else:
+        add_log(f"Outputs set: {Output_en}")
+
+
+# Container for config frames (side-by-side)
+config_container = tk.Frame(root)
+config_container.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
+
+# ── Q1 Configuration Frame ───────────────────────────────────────────────────
+q1_config_frame = tk.Frame(config_container, relief=tk.SUNKEN, borderwidth=1)
+q1_config_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+tk.Label(q1_config_frame, text="Q1 Configuration", font=("Arial", 10, "bold")).pack(pady=5)
+
+q1_source_frame = tk.Frame(q1_config_frame)
+q1_source_frame.pack(fill=tk.X, padx=5, pady=5)
+tk.Label(q1_source_frame, text="Source:").pack(side=tk.LEFT, padx=5)
+tk.Radiobutton(q1_source_frame, text="Crystal",  variable=q1_source_var, value="Crystal",  command=update_q1_frequency_options).pack(side=tk.LEFT, padx=5)
+tk.Radiobutton(q1_source_frame, text="External", variable=q1_source_var, value="External", command=update_q1_frequency_options).pack(side=tk.LEFT, padx=5)
+tk.Radiobutton(q1_source_frame, text="PLL",      variable=q1_source_var, value="PLL",      command=update_q1_frequency_options).pack(side=tk.LEFT, padx=5)
+
+q1_freq_frame = tk.Frame(q1_config_frame)
+q1_freq_frame.pack(fill=tk.X, padx=5, pady=5)
+tk.Label(q1_freq_frame, text="Frequency (MHz):").pack(side=tk.LEFT, padx=5)
+q1_frequency_combo = ttk.Combobox(q1_freq_frame, textvariable=q1_frequency_var,
+                                   values=get_frequency_options("Crystal"),
+                                   state='readonly', width=10)
+q1_frequency_combo.pack(side=tk.LEFT, padx=5)
+q1_frequency_combo.bind('<<ComboboxSelected>>', lambda e: update_q1_selected_frequency())
+q1_frequency_var.set(get_frequency_options("Crystal")[0])
+
+q1_impulse_frame = tk.Frame(q1_config_frame)
+q1_impulse_frame.pack(fill=tk.X, padx=5, pady=5)
+tk.Checkbutton(q1_impulse_frame, text="Single impulse", variable=q1_single_impulse_var).pack(anchor="w", padx=5)
+tk.Checkbutton(q1_impulse_frame, text="Enable Q1",      variable=q1_var, command=update_output).pack(anchor="w", padx=5)
+
+# ── Q2 Configuration Frame ───────────────────────────────────────────────────
+q2_config_frame = tk.Frame(config_container, relief=tk.SUNKEN, borderwidth=1)
+q2_config_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+tk.Label(q2_config_frame, text="Q2 Configuration", font=("Arial", 10, "bold")).pack(pady=5)
+
+q2_source_frame = tk.Frame(q2_config_frame)
+q2_source_frame.pack(fill=tk.X, padx=5, pady=5)
+tk.Label(q2_source_frame, text="Source:").pack(side=tk.LEFT, padx=5)
+tk.Radiobutton(q2_source_frame, text="Crystal",  variable=q2_source_var, value="Crystal",  command=update_q2_frequency_options).pack(side=tk.LEFT, padx=5)
+tk.Radiobutton(q2_source_frame, text="External", variable=q2_source_var, value="External", command=update_q2_frequency_options).pack(side=tk.LEFT, padx=5)
+tk.Radiobutton(q2_source_frame, text="PLL",      variable=q2_source_var, value="PLL",      command=update_q2_frequency_options).pack(side=tk.LEFT, padx=5)
+
+q2_freq_frame = tk.Frame(q2_config_frame)
+q2_freq_frame.pack(fill=tk.X, padx=10, pady=5)
+tk.Label(q2_freq_frame, text="Frequency (MHz):").pack(side=tk.LEFT, padx=5)
+q2_frequency_combo = ttk.Combobox(q2_freq_frame, textvariable=q2_frequency_var,
+                                   values=get_frequency_options("Crystal"),
+                                   state='readonly', width=10)
+q2_frequency_combo.pack(side=tk.LEFT, padx=5)
+q2_frequency_combo.bind('<<ComboboxSelected>>', lambda e: update_q2_selected_frequency())
+q2_frequency_var.set(get_frequency_options("Crystal")[0])
+
+q2_impulse_frame = tk.Frame(q2_config_frame)
+q2_impulse_frame.pack(fill=tk.X, padx=5, pady=5)
+tk.Checkbutton(q2_impulse_frame, text="Single impulse", variable=q2_single_impulse_var).pack(anchor="w", padx=5)
+tk.Checkbutton(q2_impulse_frame, text="Enable Q2",      variable=q2_var, command=update_output).pack(anchor="w", padx=5)
+
+# ── Buttons ──────────────────────────────────────────────────────────────────
 buttons_frame = tk.Frame(root)
-buttons_frame.pack(pady=20)
+buttons_frame.pack(fill=tk.X, padx=10, pady=10)
 
-send_impulse_button = tk.Button(
-    buttons_frame,
-    text="Send Impulse",
-    command=send_impulse,
-    state=tk.DISABLED
-)
-send_impulse_button.pack(pady=10)
+tk.Button(buttons_frame, text="Load Configuration", command=load_configuration, width=15).pack(pady=5)
+tk.Button(buttons_frame, text="Send impulse",        command=send_impulse,       width=15).pack(pady=5)
+tk.Button(buttons_frame, text="Stop",                command=stop_impulse,       width=15).pack(pady=5)
 
-tk.Button(buttons_frame, text="Stop", command=stop_impulse).pack(pady=5)
-
-# DEBUG LED BUTTONS
-debug_frame = tk.Frame(root)
-debug_frame.pack(pady=10)
-
-tk.Button(debug_frame, text="Debug LED On", command=debug_led_on).pack(side=tk.LEFT, padx=5)
-tk.Button(debug_frame, text="Debug LED Off", command=debug_led_off).pack(side=tk.LEFT, padx=5)
-
-# LOG
+# ── LOG ───────────────────────────────────────────────────────────────────────
 log_frame = tk.Frame(root)
-log_frame.pack(fill=tk.X, padx=10, pady=10)
+log_frame.pack(fill=tk.X, padx=10, pady=10, side=tk.BOTTOM)
 
 tk.Label(log_frame, text="LOG:").pack(side=tk.LEFT, padx=5)
-
 log_label = tk.Label(log_frame, text="Waiting for events...", fg="gray", justify=tk.LEFT)
 log_label.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
