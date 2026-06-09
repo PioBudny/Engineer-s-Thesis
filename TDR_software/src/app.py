@@ -142,7 +142,7 @@ def stop_impulse():
 
 
 def load_configuration():
-    global Synth_mode
+    global jitter_ant
 
     if not (ser and ser.is_open):
         add_log("Not connected to Pico")
@@ -156,14 +156,15 @@ def load_configuration():
     q1_freq = q1_selected_frequency
     q2_freq = q2_selected_frequency
     
-    Synth_mode = int(
+    jitter_ant = int(
     q1_source_var.get() == "External" or
     q2_source_var.get() == "External"
 )
 
     cmd = (
         f"LOAD_CONFIG,"
-        f"{Synth_mode},"
+        f"{jitter_ant},"
+        f"{Output_en},"
         f"{q1_source},{q2_source},"
         f"{q1_freq},{q2_freq}\n"
     )
@@ -186,6 +187,20 @@ def default_config():
         return
     ser.write(b"DEFAULT_CONFIG\n")
     add_log("Loaded default configuration")
+    
+def Innitial_Config():
+    if not (ser and ser.is_open):
+        add_log("Not connected to Pico")
+        return
+    ser.write(b"Innital_Config\n")
+    add_log("Loaded innital configuration")
+    
+def Calibrate_PLL():
+    if not (ser and ser.is_open):
+        add_log("Not connected to Pico")
+        return
+    ser.write(b"CALIBRATE_PLL\n")
+    add_log("Calibrating PLL")
 
 
 # ===== LOG =====
@@ -214,6 +229,8 @@ tk.Button(top_frame, text="Connect",        command=connect).pack(side=tk.RIGHT,
 tk.Button(top_frame, text="Open Log",       command=open_log_window).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Read Registers", command=read_regs).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Default config", command=default_config).pack(side=tk.RIGHT, padx=5)
+tk.Button(top_frame, text="Innitial Config", command=Innitial_Config).pack(side=tk.RIGHT, padx=5)
+tk.Button(top_frame, text="Calibrate PLL", command=Calibrate_PLL).pack(side=tk.RIGHT, padx=5)
 
 q1_var                = tk.BooleanVar()
 q2_var                = tk.BooleanVar()
@@ -309,6 +326,7 @@ q1_frequency_combo = ttk.Combobox(q1_freq_frame, textvariable=q1_frequency_var,
 q1_frequency_combo.pack(side=tk.LEFT, padx=5)
 q1_frequency_combo.bind('<<ComboboxSelected>>', lambda e: update_q1_selected_frequency())
 q1_frequency_var.set(get_frequency_options("Crystal")[0])
+update_q1_selected_frequency()
 
 q1_impulse_frame = tk.Frame(q1_config_frame)
 q1_impulse_frame.pack(fill=tk.X, padx=5, pady=5)
@@ -337,6 +355,7 @@ q2_frequency_combo = ttk.Combobox(q2_freq_frame, textvariable=q2_frequency_var,
 q2_frequency_combo.pack(side=tk.LEFT, padx=5)
 q2_frequency_combo.bind('<<ComboboxSelected>>', lambda e: update_q2_selected_frequency())
 q2_frequency_var.set(get_frequency_options("Crystal")[0])
+update_q2_selected_frequency()
 
 q2_impulse_frame = tk.Frame(q2_config_frame)
 q2_impulse_frame.pack(fill=tk.X, padx=5, pady=5)
