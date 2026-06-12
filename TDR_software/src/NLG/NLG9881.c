@@ -6,7 +6,7 @@
 
 // Uruchomienie I2C i konfiguracja pinów
 void i2c_device_init(i2c_inst_t *i2c, uint sda, uint scl) {
-    i2c_init(i2c, 100 * 1000);
+    i2c_init(i2c, 400 * 1000);
     gpio_set_function(sda, GPIO_FUNC_I2C);
     gpio_set_function(scl, GPIO_FUNC_I2C);
     gpio_pull_up(sda);
@@ -130,7 +130,7 @@ const pll_cfg_t Innit_NLG[] =
     {0x0037,                    0x00},
     {REG_GPO_OUTPUT_VAL,        0x00},
 
-    {REG_OUTPUT_EN_CTRL,        0x04},
+    {REG_OUTPUT_EN_CTRL,        0x00},
     {REG_OUTPUT_POL_CTRL,       0x00},
 
     {0x003B,                    0x00},
@@ -223,7 +223,7 @@ const pll_cfg_t Innit_NLG[] =
     {REG_FACTORY_SETTING_1,     0xCC},
 
     //flagi
-    {REG_INT_STATUS_0,          0x53},
+    {REG_INT_STATUS_0,          0x73},
     {REG_INT_STATUS_1,          0x00},
     //{REG_GPI_VAL_STATUS,        0x00},
     //{REG_GLOBAL_INT_STATUS,     0x00},
@@ -278,7 +278,7 @@ const pll_cfg_t Constant_values[] =
     {0x0030, 0x00},
     {0x0031, 0x00},
     {0x0032, 0x00},
-    {0x0033, 0x00},
+    {0x0033, 0x03},
     {0x0034, 0x00},
     {0x0035, 0x00},
     {0x0036, 0x00},
@@ -292,15 +292,17 @@ const pll_cfg_t Constant_values[] =
     {0x003E, 0x66},
     {0x003F, 0x00},
     {0x0040, 0x00},
-    {0x0041, 0x00},
+    {0x0041, 0x03},
     {0x0042, 0x00},
     {0x0043, 0x00},
-    {0x0044, 0x00},
+    {0x0044, 0x03},
     {0x0045, 0x00},
     {0x0046, 0x00},
+    {0x0047, 0x03},
 
     {0x0048, 0x00},
     {0x0049, 0x00},
+    {0x004A, 0x03},
 
     {0x004B, 0x00},
     {0x004C, 0x00},
@@ -335,7 +337,7 @@ const pll_cfg_t Constant_values[] =
     {0x006A, 0x2B},
     {0x006B, 0x20},
     {0x006C, 0x00},
-    {0x006D, 0x00},
+    {0x006D, 0x02},
     {0x006E, 0x00},
     {REG_PWR_DN_CTRL_2,         0x03},
 
@@ -353,6 +355,7 @@ const pll_cfg_t Constant_values[] =
 
     {0x007A, 0x27},
     {0x007B, 0xCC},
+    {0x0200, 0x73},
 };
 
 const pll_cfg_t MainPLL[] =
@@ -431,7 +434,7 @@ const pll_cfg_t MainPLL[] =
     {0x0037,                    0x00},
     {REG_GPO_OUTPUT_VAL,        0x00},
 
-    {REG_OUTPUT_EN_CTRL,        0x0E},
+    {REG_OUTPUT_EN_CTRL,        0x0F},
     {REG_OUTPUT_POL_CTRL,       0x00},
 
     {0x003B,                    0x00},
@@ -539,7 +542,7 @@ const size_t Constant_values_count = sizeof(Constant_values) / sizeof(Constant_v
 
 void Flag_Clear(i2c_inst_t *i2c)
 {
-    uint8_t clr = 0x53;
+    uint8_t clr = 0x73;
     i2c_write_reg16(i2c, DEVICE_ADDR, REG_INT_STATUS_0, &clr, 1);
 }
 

@@ -132,6 +132,23 @@ def send_impulse():
     ser.write(cmd.encode())
     add_log(f"Sent: {cmd.strip()}")
 
+def send_GPIO_impulse():
+    global Output_en
+
+    if not (ser and ser.is_open):
+        add_log("Not connected to Pico")
+        return
+
+    if Output_en == 0:
+        add_log("Select Q1 or Q2 first")
+        return
+
+    q1_single = int(q1_single_impulse_var.get())
+    q2_single = int(q2_single_impulse_var.get())
+
+    cmd = f"IMPULSE_GPIO_START,{Output_en},{q1_single},{q2_single}\n"
+    ser.write(cmd.encode())
+    add_log(f"Sent: {cmd.strip()}")
 
 def stop_impulse():
     if ser and ser.is_open:
@@ -246,7 +263,7 @@ q2_selected_frequency = 0
 
 def get_frequency_options(source):
     if source == "Crystal":
-        return ["1", "4"]
+        return ["1","4", "10k"]
     elif source == "External":
         return ["1", "16"]
     else:  # PLL
@@ -273,18 +290,18 @@ def update_q2_frequency_options():
 
 def update_q1_selected_frequency():
     global q1_selected_frequency
-    try:
+    if q1_frequency_var.get() == "10k":
+        q1_selected_frequency = 10000
+    else:
         q1_selected_frequency = int(q1_frequency_var.get())
-    except ValueError:
-        q1_selected_frequency = 0
 
 
 def update_q2_selected_frequency():
     global q2_selected_frequency
-    try:
+    if q2_frequency_var.get() == "10k":
+        q2_selected_frequency = 10000
+    else:
         q2_selected_frequency = int(q2_frequency_var.get())
-    except ValueError:
-        q2_selected_frequency = 0
 
 
 def update_output():
@@ -367,7 +384,8 @@ buttons_frame = tk.Frame(root)
 buttons_frame.pack(fill=tk.X, padx=10, pady=10)
 
 tk.Button(buttons_frame, text="Load Configuration", command=load_configuration, width=15).pack(pady=5)
-tk.Button(buttons_frame, text="Send impulse",        command=send_impulse,       width=15).pack(pady=5)
+tk.Button(buttons_frame, text="Send impulse by i2C",        command=send_impulse,       width=15).pack(pady=5)
+tk.Button(buttons_frame, text="Send impulse by GPIO",        command=send_GPIO_impulse,       width=15).pack(pady=5)
 tk.Button(buttons_frame, text="Stop",                command=stop_impulse,       width=15).pack(pady=5)
 
 # ── LOG ───────────────────────────────────────────────────────────────────────
