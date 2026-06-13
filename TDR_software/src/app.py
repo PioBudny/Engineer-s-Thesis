@@ -203,7 +203,6 @@ def default_config():
         add_log("Not connected to Pico")
         return
     ser.write(b"DEFAULT_CONFIG\n")
-    add_log("Loaded default configuration")
     
 def Innitial_Config():
     if not (ser and ser.is_open):
@@ -217,7 +216,6 @@ def Calibrate_PLL():
         add_log("Not connected to Pico")
         return
     ser.write(b"CALIBRATE_PLL\n")
-    add_log("Calibrating PLL")
 
 
 # ===== LOG =====
@@ -313,8 +311,6 @@ def update_output():
         Output_en |= 0b1000
     if Output_en == 0:
         add_log("No outputs selected")
-    else:
-        add_log(f"Outputs set: {Output_en}")
 
 
 # Container for config frames (side-by-side)

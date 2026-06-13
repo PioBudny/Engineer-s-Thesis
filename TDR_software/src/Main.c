@@ -355,7 +355,6 @@ int main()
                         }
 
                         load_tab(I2C_PORT, cfg, cfg_count);
-                        printf("Load configuration successful\n");
                         break;
                     }
 
