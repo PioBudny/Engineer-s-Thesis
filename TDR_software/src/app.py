@@ -21,7 +21,14 @@ def find_pico():
             return port.device
     return None
 
-
+def disconnect():
+    global ser, current_port, serial_reader_started
+    ser = None
+    current_port = None
+    serial_reader_started = False
+    status_label.itemconfig("led", fill="red")
+    add_log("Connection lost - Pico disconnected")
+    
 def append_log_text(message):
     global log_text
     if log_text:
@@ -71,16 +78,25 @@ def read_serial():
             if line:
                 add_log(line)
         except Exception:
-            pass
+            disconnect()
+            root.after(2000, try_reconnect)
+            return
     root.after(100, read_serial)
 
-
+def try_reconnect():
+    if ser and ser.is_open:  # już połączony, nie rób nic
+        return
+    port = find_pico()
+    if port:
+        connect()
+    else:
+        root.after(2000, try_reconnect)
+        
 def start_serial_reader():
     global serial_reader_started
     if not serial_reader_started:
         serial_reader_started = True
         root.after(100, read_serial)
-
 
 def connect():
     global ser, current_port
@@ -112,8 +128,7 @@ def connect():
         current_port = None
         status_label.itemconfig("led", fill="red")
         add_log(f"Connection failed: {e}")
-
-
+        
 def send_impulse():
     global Output_en
 
