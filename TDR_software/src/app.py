@@ -145,7 +145,6 @@ def send_impulse():
 
     cmd = f"IMPULSE_START,{Output_en},{q1_single},{q2_single}\n"
     ser.write(cmd.encode())
-    add_log(f"Sent: {cmd.strip()}")
 
 def send_GPIO_impulse():
     global Output_en
@@ -172,9 +171,19 @@ def stop_impulse():
     else:
         add_log("Not connected to Pico")
 
+def gpio1():
+    if ser and ser.is_open:
+        ser.write(b"GPIO1\n")
+    else:
+        add_log("Not connected to Pico")
+
+def gpio2():
+    if ser and ser.is_open:
+        ser.write(b"GPIO2\n")
+    else:
+        add_log("Not connected to Pico")
 
 def load_configuration():
-    global jitter_ant
 
     if not (ser and ser.is_open):
         add_log("Not connected to Pico")
@@ -195,14 +204,12 @@ def load_configuration():
 
     cmd = (
         f"LOAD_CONFIG,"
-        f"{jitter_ant},"
         f"{Output_en},"
         f"{q1_source},{q2_source},"
         f"{q1_freq},{q2_freq}\n"
     )
 
     ser.write(cmd.encode())
-    add_log(f"Sent: {cmd.strip()}")
 
 
 def read_regs():
@@ -210,7 +217,6 @@ def read_regs():
         add_log("Not connected to Pico")
         return
     ser.write(b"READ_REGS\n")
-    add_log("Requested device register dump")
 
 
 def default_config():
@@ -224,7 +230,6 @@ def Innitial_Config():
         add_log("Not connected to Pico")
         return
     ser.write(b"Innital_Config\n")
-    add_log("Loaded innital configuration")
     
 def Calibrate_PLL():
     if not (ser and ser.is_open):
@@ -245,7 +250,7 @@ def add_log(message):
 
 root = tk.Tk()
 root.title("TDR App")
-root.geometry("600x450")
+root.geometry("500x450")
 
 # Top frame
 top_frame = tk.Frame(root)
@@ -277,8 +282,6 @@ q2_selected_frequency = 0
 def get_frequency_options(source):
     if source == "Crystal":
         return ["1","4", "10k"]
-    elif source == "External":
-        return ["1", "16"]
     else:  # PLL
         return ["25", "50", "100", "200"]
 
@@ -342,7 +345,6 @@ q1_source_frame = tk.Frame(q1_config_frame)
 q1_source_frame.pack(fill=tk.X, padx=5, pady=5)
 tk.Label(q1_source_frame, text="Source:").pack(side=tk.LEFT, padx=5)
 tk.Radiobutton(q1_source_frame, text="Crystal",  variable=q1_source_var, value="Crystal",  command=update_q1_frequency_options).pack(side=tk.LEFT, padx=5)
-tk.Radiobutton(q1_source_frame, text="External", variable=q1_source_var, value="External", command=update_q1_frequency_options).pack(side=tk.LEFT, padx=5)
 tk.Radiobutton(q1_source_frame, text="PLL",      variable=q1_source_var, value="PLL",      command=update_q1_frequency_options).pack(side=tk.LEFT, padx=5)
 
 q1_freq_frame = tk.Frame(q1_config_frame)
@@ -371,7 +373,6 @@ q2_source_frame = tk.Frame(q2_config_frame)
 q2_source_frame.pack(fill=tk.X, padx=5, pady=5)
 tk.Label(q2_source_frame, text="Source:").pack(side=tk.LEFT, padx=5)
 tk.Radiobutton(q2_source_frame, text="Crystal",  variable=q2_source_var, value="Crystal",  command=update_q2_frequency_options).pack(side=tk.LEFT, padx=5)
-tk.Radiobutton(q2_source_frame, text="External", variable=q2_source_var, value="External", command=update_q2_frequency_options).pack(side=tk.LEFT, padx=5)
 tk.Radiobutton(q2_source_frame, text="PLL",      variable=q2_source_var, value="PLL",      command=update_q2_frequency_options).pack(side=tk.LEFT, padx=5)
 
 q2_freq_frame = tk.Frame(q2_config_frame)
@@ -396,8 +397,16 @@ buttons_frame.pack(fill=tk.X, padx=10, pady=10)
 
 tk.Button(buttons_frame, text="Load Configuration", command=load_configuration, width=15).pack(pady=5)
 tk.Button(buttons_frame, text="Send impulse by i2C",        command=send_impulse,       width=15).pack(pady=5)
-tk.Button(buttons_frame, text="Send impulse by GPIO",        command=send_GPIO_impulse,       width=15).pack(pady=5)
+#tk.Button(buttons_frame, text="Send impulse by GPIO",        command=send_GPIO_impulse,       width=15).pack(pady=5)
 tk.Button(buttons_frame, text="Stop",                command=stop_impulse,       width=15).pack(pady=5)
+
+# ── GPIO Buttons ────────────────────────────────────────────────────────────
+gpio_frame = tk.Frame(root)
+gpio_frame.pack(fill=tk.X, padx=10, pady=5)
+
+tk.Button(gpio_frame, text="GPIO1", command=gpio1, width=15).pack(side=tk.LEFT, padx=5)
+tk.Button(gpio_frame, text="GPIO2", command=gpio2, width=15).pack(side=tk.LEFT, padx=5)
+
 
 # ── LOG ───────────────────────────────────────────────────────────────────────
 log_frame = tk.Frame(root)

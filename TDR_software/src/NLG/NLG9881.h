@@ -181,6 +181,10 @@ extern const size_t Innit_NLG_count;
 extern const pll_cfg_t Constant_values[];
 extern const size_t Constant_values_count;
 
+extern const pll_cfg_t GPIO_Test[];
+extern const size_t GPIO_Test_count;
+
+
 // podstawowe operacje
 void i2c_device_init(i2c_inst_t *i2c, uint sda, uint scl);
 bool i2c_write_reg16(i2c_inst_t *i2c, uint8_t addr, uint16_t reg, uint8_t *data, size_t len);
