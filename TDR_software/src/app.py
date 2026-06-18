@@ -146,40 +146,10 @@ def send_impulse():
     cmd = f"IMPULSE_START,{Output_en},{q1_single},{q2_single}\n"
     ser.write(cmd.encode())
 
-def send_GPIO_impulse():
-    global Output_en
-
-    if not (ser and ser.is_open):
-        add_log("Not connected to Pico")
-        return
-
-    if Output_en == 0:
-        add_log("Select Q1 or Q2 first")
-        return
-
-    q1_single = int(q1_single_impulse_var.get())
-    q2_single = int(q2_single_impulse_var.get())
-
-    cmd = f"IMPULSE_GPIO_START,{Output_en},{q1_single},{q2_single}\n"
-    ser.write(cmd.encode())
-    add_log(f"Sent: {cmd.strip()}")
-
 def stop_impulse():
     if ser and ser.is_open:
         ser.write(b"IMPULSE_STOP\n")
         add_log("Stopped sending impulses")
-    else:
-        add_log("Not connected to Pico")
-
-def gpio1():
-    if ser and ser.is_open:
-        ser.write(b"GPIO1\n")
-    else:
-        add_log("Not connected to Pico")
-
-def gpio2():
-    if ser and ser.is_open:
-        ser.write(b"GPIO2\n")
     else:
         add_log("Not connected to Pico")
 
@@ -211,13 +181,11 @@ def load_configuration():
 
     ser.write(cmd.encode())
 
-
 def read_regs():
     if not (ser and ser.is_open):
         add_log("Not connected to Pico")
         return
     ser.write(b"READ_REGS\n")
-
 
 def default_config():
     if not (ser and ser.is_open):
@@ -263,8 +231,8 @@ status_label.create_oval(2, 2, 18, 18, fill="red", outline="black", tags="led")
 tk.Button(top_frame, text="Connect",        command=connect).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Open Log",       command=open_log_window).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Read Registers", command=read_regs).pack(side=tk.RIGHT, padx=5)
-tk.Button(top_frame, text="Default config", command=default_config).pack(side=tk.RIGHT, padx=5)
-tk.Button(top_frame, text="Innitial Config", command=Innitial_Config).pack(side=tk.RIGHT, padx=5)
+tk.Button(top_frame, text="GPIO_Control", command=default_config).pack(side=tk.RIGHT, padx=5)
+tk.Button(top_frame, text="I2C control", command=Innitial_Config).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Calibrate PLL", command=Calibrate_PLL).pack(side=tk.RIGHT, padx=5)
 
 q1_var                = tk.BooleanVar()
@@ -396,17 +364,8 @@ buttons_frame = tk.Frame(root)
 buttons_frame.pack(fill=tk.X, padx=10, pady=10)
 
 tk.Button(buttons_frame, text="Load Configuration", command=load_configuration, width=15).pack(pady=5)
-tk.Button(buttons_frame, text="Send impulse by i2C",        command=send_impulse,       width=15).pack(pady=5)
-#tk.Button(buttons_frame, text="Send impulse by GPIO",        command=send_GPIO_impulse,       width=15).pack(pady=5)
+tk.Button(buttons_frame, text="Send impulse",        command=send_impulse,       width=15).pack(pady=5)
 tk.Button(buttons_frame, text="Stop",                command=stop_impulse,       width=15).pack(pady=5)
-
-# ── GPIO Buttons ────────────────────────────────────────────────────────────
-gpio_frame = tk.Frame(root)
-gpio_frame.pack(fill=tk.X, padx=10, pady=5)
-
-tk.Button(gpio_frame, text="GPIO1", command=gpio1, width=15).pack(side=tk.LEFT, padx=5)
-tk.Button(gpio_frame, text="GPIO2", command=gpio2, width=15).pack(side=tk.LEFT, padx=5)
-
 
 # ── LOG ───────────────────────────────────────────────────────────────────────
 log_frame = tk.Frame(root)

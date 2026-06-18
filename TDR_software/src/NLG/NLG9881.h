@@ -172,12 +172,6 @@ typedef struct {
     uint8_t value;
 } pll_cfg_t;
 
-extern const pll_cfg_t MainPLL[];
-extern const size_t MainPLL_count;
-
-extern const pll_cfg_t Innit_NLG[];
-extern const size_t Innit_NLG_count;
-
 extern const pll_cfg_t Constant_values[];
 extern const size_t Constant_values_count;
 

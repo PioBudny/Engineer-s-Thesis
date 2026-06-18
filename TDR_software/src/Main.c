@@ -19,6 +19,7 @@ static uint8_t reg;
 
 pll_cfg_t cfg[MAX_CFG_ITEMS];
 size_t cfg_count = 0;
+bool GPIO_ON;
 
 void cfg_add(uint16_t reg, uint8_t value)
 {
@@ -57,11 +58,15 @@ static CommandType parse_command(const char *buffer)
     if (strncmp(buffer, "READ_REGS", 9) == 0)
         return CMD_READ_REGS;
 
-    if (strncmp(buffer, "DEFAULT_CONFIG", 14) == 0)
+    if (strncmp(buffer, "DEFAULT_CONFIG", 14) == 0){
+        GPIO_ON = true;
         return CMD_DEFAULT_CONFIG;
+    }
 
-    if (strncmp(buffer, "Innital_Config", 14) == 0)
+    if (strncmp(buffer, "Innital_Config", 14) == 0){
+        GPIO_ON = false;
         return CMD_Innital_Config;
+        }
 
     if (strncmp(buffer, "LOAD_CONFIG", 11) == 0)
         return CMD_LOAD_CONFIG;
@@ -77,12 +82,6 @@ static CommandType parse_command(const char *buffer)
 
     if (strncmp(buffer, "IMPULSE_GPIO_START", 18) == 0)
         return CMD_IMPULSE_GPIO_START;
-
-    if (strncmp(buffer, "GPIO1", 5) == 0)
-    return CMD_GPIO1;
-
-    if (strncmp(buffer, "GPIO2", 5) == 0)
-    return CMD_GPIO2;
 
     return CMD_UNKNOWN;
 }
@@ -141,15 +140,13 @@ int main()
 
                     case CMD_Innital_Config: { // Wypisywanie wszystkich rejestrów NLG
                         load_tab(I2C_PORT, Constant_values, Constant_values_count);
-                        printf("Loaded innital configuration");
                         printf("OK\n");
                         break;
                     }
 
                     case CMD_DEFAULT_CONFIG: {
                         load_tab(I2C_PORT, GPIO_Test, GPIO_Test_count);
-                        //load_tab(I2C_PORT, MainPLL, MainPLL_count);
-                        printf("Default configuration loaded\n");
+                        printf("OK\n");
                         break;
                     }
 
@@ -158,45 +155,6 @@ int main()
                         printf("Calibrating PLL");
                         break;
                     }
-
-                    case CMD_GPIO1: {
-                        gpio_put(2, !gpio_get(2));
-                        gpio_put(3, !gpio_get(3));
-                        sleep_us(20);
-                        gpio_put(2, !gpio_get(2));
-                        gpio_put(3, !gpio_get(3));
-                        printf("GPIO1 = %d\n", gpio_get(2));
-                        printf("GPIO2 = %d\n", gpio_get(3));
-
-                        i2c_read_reg16(I2C_PORT, DEVICE_ADDR, 0x020C, &reg, 1);
-
-                        printf("reg: 0x%02X (", reg);
-
-                        for (int i = 7; i >= 0; i--)
-                        {
-                            printf("%d", (reg >> i) & 1);
-                        }
-
-                        printf(")\n");
-                        break;
-                    }
-
-                    case CMD_GPIO2: {
-                        gpio_put(3, !gpio_get(3));
-                        printf("GPIO2 = %d\n", gpio_get(3));
-                        i2c_read_reg16(I2C_PORT, DEVICE_ADDR, 0x020C, &reg, 1);
-
-                        printf("reg: 0x%02X (", reg);
-
-                        for (int i = 7; i >= 0; i--)
-                        {
-                            printf("%d", (reg >> i) & 1);
-                        }
-
-                        printf(")\n");
-                        break;
-                    }
-
 
                     case CMD_LOAD_CONFIG: {
                     uint8_t q1_source, q2_source, jitter_ant, output_en;
@@ -213,22 +171,22 @@ int main()
                         cfg_count = 0;
 
                             // ── Q2 ──────────────────────────────────────────
-                            if(output_en == 4 || output_en == 12) {
+                            if(output_en == 8 || output_en == 12) {
                                 printf("Configuring Q1...\n");
-                                if (q1_source == 0) {               // Crystal        
+                                if (q2_source == 0) {               // Crystal        
                                     cfg_add(0x5F, 0x00);        
                                     cfg_add(0x63, 0x03);             
-                                if (q1_freq == 1) {             // Crystal 1MHz
+                                if (q2_freq == 1) {             // Crystal 1MHz
                                     cfg_add(0x46, 0x00);  
                                     cfg_add(0x47, 0x0C);        
                                     cfg_add(0x5B, 0x08);       
                                 }
-                                else if (q1_freq == 4) {        // Crystal 4MHz 
+                                else if (q2_freq == 4) {        // Crystal 4MHz 
                                     cfg_add(0x46, 0x00);              
                                     cfg_add(0x47, 0x03);        
                                     cfg_add(0x5B, 0x02);        
                                 }
-                                else if (q1_freq == 10000) {        // Crystal 10kHz             
+                                else if (q2_freq == 10000) {        // Crystal 10kHz             
                                     cfg_add(0x46, 0x04);        
                                     cfg_add(0x47, 0xE2);
                                     cfg_add(0x5B, 0x00);        
@@ -236,31 +194,31 @@ int main()
                             }
 
                                 // ── Q2 ──────────────────────────────────
-                                    else if (q1_source == 2) { //PLL
+                                    else if (q2_source == 2) { //PLL
                                     cfg_add(0x5F, 0x00);
                                     cfg_add(0x63, 0x00);
-                                    if (q1_freq == 25) {
+                                    if (q2_freq == 25) {
                                         cfg_add(0x47, 0x46);
                                         cfg_add(0x5B, 0x00);
                                     }
-                                    else if (q1_freq == 50) {
+                                    else if (q2_freq == 50) {
                                         cfg_add(0x47, 0x23);
                                         cfg_add(0x5B, 0x00);
                                     }
-                                    else if (q1_freq == 100) {
+                                    else if (q2_freq == 100) {
                                         cfg_add(0x47, 0x11);
                                         cfg_add(0x5B, 0x04);
                                     }
-                                    else if (q1_freq == 200) {
+                                    else if (q2_freq == 200) {
                                         cfg_add(0x47, 0x08);
                                         cfg_add(0x5B, 0x06);
                                     }
                                     }
                                 }
                                     // ── Q1 ──────────────────────────────────
-                                if (output_en == 8 || output_en == 12) {
+                                if (output_en == 4 || output_en == 12) {
                                     printf("Configuring Q2...\n");
-                                    if (q2_source == 0) {               // Crystal
+                                    if (q1_source == 0) {               // Crystal
                                             cfg_add(0x5B, 0x00);        // NFRAC_Q2 (Część ułamkowa fizycznego Q2) [4, 11]      
                                             cfg_add(0x63, 0x30);        // CLK_SEL (Wybór Crystal dla wyjścia Q3) [4, 12, 14]
                                         if (q2_freq == 1) {             // Crystal 1MHz
@@ -280,22 +238,22 @@ int main()
                                 }
                                     }
                                         // ── Q1 ──────────────────────────────────
-                                        else if (q2_source == 2) {              // PLL Mode
+                                        else if (q1_source == 2) {              // PLL Mode
                                             cfg_add(0x5B, 0x00);
                                             cfg_add(0x63, 0x00);
-                                            if (q2_freq == 25) {
+                                            if (q1_freq == 25) {
                                                 cfg_add(0x4A, 0x46);
                                                 cfg_add(0x5F, 0x00);
                                             }
-                                            else if (q2_freq == 50) {
+                                            else if (q1_freq == 50) {
                                                 cfg_add(0x4A, 0x23);
                                                 cfg_add(0x5F, 0x00);
                                             }
-                                            else if (q2_freq == 100) {
+                                            else if (q1_freq == 100) {
                                                 cfg_add(0x4A, 0x11);
                                                 cfg_add(0x5F, 0x04);
                                             }
-                                            else if (q2_freq == 200) {
+                                            else if (q1_freq == 200) {
                                                 cfg_add(0x4A, 0x08);
                                                 cfg_add(0x5F, 0x06);
                                             }
@@ -323,15 +281,55 @@ int main()
 
                         uint8_t output_en = 0, q1_single = 0, q2_single = 0;
                         sscanf(buffer, "IMPULSE_START,%hhu,%hhu,%hhu", &output_en, &q1_single, &q2_single);
+                        if(GPIO_ON){
+                             if (output_en & 0x04)
+                        {
+                            if (q1_single)
+                            {                                
+                                gpio_put(2, !gpio_get(2));
+                                gpio_put(3, !gpio_get(3));
+                                sleep_us(20);
+                                gpio_put(2, !gpio_get(2));
+                                gpio_put(3, !gpio_get(3));
+                                printf("Q1 impulse started\n");
 
+                            }
+                            else
+                            {
+                                gpio_put(2, !gpio_get(2));
+                                gpio_put(3, !gpio_get(3));
+                                printf("Q1 impulse started\n");
+                            }
+                        }
+                        if (output_en & 0x08)
+                        {
+                            if (q2_single)
+                            {
+                                gpio_put(2, !gpio_get(2));
+                                gpio_put(3, !gpio_get(3));
+                                sleep_us(20);
+                                gpio_put(2, !gpio_get(2));
+                                gpio_put(3, !gpio_get(3));
+                                printf("Q2 impulse started\n");
+                            }
+                            else
+                            {
+                                gpio_put(2, !gpio_get(2));
+                                gpio_put(3, !gpio_get(3));
+                                printf("Q2 impulse started\n");
+                            }
+                        }
+
+
+                        else{
                         if (output_en & 0x04)
                         {
                             if (q1_single)
                             {                                
-                                reg |= (1 << 2);
+                                reg |= (1 << 3);
                                 i2c_write_reg16(I2C_PORT, DEVICE_ADDR, 0x39, &reg, 1);
 
-                                reg &= ~(1 << 2);
+                                reg &= ~(1 << 3);
                                 i2c_write_reg16(I2C_PORT, DEVICE_ADDR, 0x39, &reg, 1);
                                 printf("Q1 impulse started\n");
 
@@ -348,9 +346,9 @@ int main()
                         {
                             if (q2_single)
                             {
-                                reg |= (1 << 3);
+                                reg |= (1 << 2);
                                 i2c_write_reg16(I2C_PORT, DEVICE_ADDR, 0x39, &reg, 1);
-                                reg &= ~(1 << 3);
+                                reg &= ~(1 << 2);
                                 i2c_write_reg16(I2C_PORT, DEVICE_ADDR, 0x39, &reg, 1);
                                 printf("Q2 impulse started\n");
                             }
@@ -361,23 +359,11 @@ int main()
                                 printf("Q2 impulse started\n");
                             }
                         }
-                        printf("Outputs: ");
-
-
-                        if (output_en & 0x04)
-                        {
-                            printf("Q1 (%s) ",
-                                q1_single ? "Single" : "Continuous");
-                        }
-
-                        if (output_en & 0x08)
-                        {
-                            printf("Q2 (%s) ",
-                                q2_single ? "Single" : "Continuous");
-                        }
+                    }
                         printf("\n");
                         break;
                     }
+                }
 
                     case CMD_IMPULSE_STOP: { //Wyłącznie wyjść
                         reg = 0x00;
