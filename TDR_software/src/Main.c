@@ -92,11 +92,7 @@ void innit(){
     gpio_set_dir(LED_PIN, GPIO_OUT);
     gpio_put(LED_PIN, 0);
 
-    clock_gpio_init(21, CLOCKS_CLK_GPOUT0_CTRL_AUXSRC_VALUE_CLK_SYS, 1.5);
-
     i2c_device_init(I2C_PORT, I2C_SDA, I2C_SCL);
-    gpio_pull_up(I2C_SDA);
-    gpio_pull_up(I2C_SCL);
 
     gpio_init(2);
     gpio_set_dir(2, GPIO_OUT);
