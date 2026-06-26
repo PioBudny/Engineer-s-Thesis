@@ -48,9 +48,7 @@ typedef enum {
     CMD_Innital_Config,
     CMD_CALIBRATE_PLL,
     CMD_IMPULSE_GPIO_START,
-
-    CMD_GPIO1,
-    CMD_GPIO2
+    CMD_PING
 } CommandType;
 
 static CommandType parse_command(const char *buffer)
@@ -83,6 +81,9 @@ static CommandType parse_command(const char *buffer)
     if (strncmp(buffer, "IMPULSE_GPIO_START", 18) == 0)
         return CMD_IMPULSE_GPIO_START;
 
+    if (strncmp(buffer, "PING", 4) == 0)
+        return CMD_PING;
+        
     return CMD_UNKNOWN;
 }
 
@@ -149,6 +150,11 @@ int main()
                     case CMD_CALIBRATE_PLL: {
                         Flag_Clear(I2C_PORT);
                         printf("Calibrating PLL");
+                        break;
+                    }
+                    
+                    case CMD_PING: {
+                        printf("PONG\n");
                         break;
                     }
 

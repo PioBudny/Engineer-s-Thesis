@@ -3,6 +3,8 @@ from tkinter import ttk
 import serial
 import serial.tools.list_ports
 import time
+from Impedance_wave import Impedance_Wave as _Impedance_Wave
+from Calculator import Calculator as _Calculator
 
 ser = None
 current_port = None
@@ -11,13 +13,18 @@ log_text = None
 serial_reader_started = False
 Output_en = 0
 Selected_Frequency = 0
+impedance_window = None
+calculator_window = None
 
 # ===== SERIAL =====
 
 def find_pico():
     ports = serial.tools.list_ports.comports()
     for port in ports:
-        if "USB" in port.description or "Pico" in port.description:
+        desc = port.description.lower()
+        hwid = port.hwid.lower()
+        # Raspberry Pi Pico ma VID=2E8A
+        if "2e8a" in hwid or "pico" in desc or "raspberry" in desc:
             return port.device
     return None
 
@@ -97,32 +104,39 @@ def start_serial_reader():
     if not serial_reader_started:
         serial_reader_started = True
         root.after(100, read_serial)
-
 def connect():
     global ser, current_port
 
     port = find_pico()
-
     if not port:
-        ser = None
-        current_port = None
         status_label.itemconfig("led", fill="red")
         add_log("Disconnected - Pico not found")
         return
 
     if ser and ser.is_open and port == current_port:
-        status_label.itemconfig("led", fill="green")
         add_log("Already connected to " + port)
         return
 
     try:
-        ser = serial.Serial(port, 115200, timeout=0.1)
+        ser = serial.Serial(port, 115200, timeout=1)
         time.sleep(2)
+
+        # Wyślij ping i sprawdź odpowiedź
+        ser.write(b"PING\n")
+        response = ser.readline().decode(errors='ignore').strip()
+        if response != "PONG":
+            add_log(f"Handshake failed (got: '{response}')")
+            ser.close()
+            ser = None
+            status_label.itemconfig("led", fill="red")
+            return
+
         current_port = port
         status_label.itemconfig("led", fill="green")
         add_log("Connected to " + port)
         open_log_window()
         start_serial_reader()
+
     except Exception as e:
         ser = None
         current_port = None
@@ -205,7 +219,38 @@ def Calibrate_PLL():
         return
     ser.write(b"CALIBRATE_PLL\n")
 
+# ===== IMPEDANCE WAVE WINDOW =====
+ 
+def close_impedance_window():
+    global impedance_window
+    if impedance_window:
+        impedance_window.destroy()
+        impedance_window = None
+ 
 
+def Impedance_Wave():
+    global impedance_window
+    if impedance_window and tk.Toplevel.winfo_exists(impedance_window):
+        impedance_window.lift()
+        return
+    impedance_window = _Impedance_Wave(root, close_impedance_window)
+    
+# ===== CALCULATOR WINDOW =====
+ 
+def close_calculator_window():
+    global calculator_window
+    if calculator_window:
+        calculator_window.destroy()
+        calculator_window = None
+ 
+def Calculator():
+    global calculator_window
+    if calculator_window and tk.Toplevel.winfo_exists(calculator_window):
+        calculator_window.lift()
+        return
+    calculator_window = _Calculator(root, close_calculator_window)
+
+    
 # ===== LOG =====
 
 def add_log(message):
@@ -231,9 +276,11 @@ status_label.create_oval(2, 2, 18, 18, fill="red", outline="black", tags="led")
 tk.Button(top_frame, text="Connect",        command=connect).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Open Log",       command=open_log_window).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Read Registers", command=read_regs).pack(side=tk.RIGHT, padx=5)
-tk.Button(top_frame, text="GPIO_Control", command=default_config).pack(side=tk.RIGHT, padx=5)
-tk.Button(top_frame, text="I2C control", command=Innitial_Config).pack(side=tk.RIGHT, padx=5)
-tk.Button(top_frame, text="Calibrate PLL", command=Calibrate_PLL).pack(side=tk.RIGHT, padx=5)
+#tk.Button(top_frame, text="GPIO_Control", command=default_config).pack(side=tk.RIGHT, padx=5)
+tk.Button(top_frame, text="Innitial config", command=Innitial_Config).pack(side=tk.RIGHT, padx=5)
+#tk.Button(top_frame, text="Calibrate PLL", command=Calibrate_PLL).pack(side=tk.RIGHT, padx=5)
+tk.Button(top_frame, text="Calculator", command=Calculator).pack(side=tk.RIGHT, padx=5)
+tk.Button(top_frame, text="Impedance Wave", command=Impedance_Wave).pack(side=tk.RIGHT, padx=5)
 
 q1_var                = tk.BooleanVar()
 q2_var                = tk.BooleanVar()
