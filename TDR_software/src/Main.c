@@ -168,7 +168,7 @@ int main()
 
                             // ── Q2 ──────────────────────────────────────────
                             if(output_en == 8 || output_en == 12) {
-                                printf("Configuring Q1...\n");
+                                printf("Configuring Q2...\n");
                                 if (q2_source == 0) {               // Crystal        
                                     cfg_add(0x5F, 0x00);        
                                     cfg_add(0x63, 0x03);             
@@ -213,7 +213,7 @@ int main()
                                 }
                                     // ── Q1 ──────────────────────────────────
                                 if (output_en == 4 || output_en == 12) {
-                                    printf("Configuring Q2...\n");
+                                    printf("Configuring Q1...\n");
                                     if (q1_source == 0) {               // Crystal
                                             cfg_add(0x5B, 0x00);        // NFRAC_Q2 (Część ułamkowa fizycznego Q2) [4, 11]      
                                             cfg_add(0x63, 0x30);        // CLK_SEL (Wybór Crystal dla wyjścia Q3) [4, 12, 14]
@@ -278,6 +278,8 @@ int main()
                         uint8_t output_en = 0, q1_single = 0, q2_single = 0;
                         sscanf(buffer, "IMPULSE_START,%hhu,%hhu,%hhu", &output_en, &q1_single, &q2_single);
                         if(GPIO_ON){
+                            reg = 0x0C;
+                            i2c_write_reg16(I2C_PORT, DEVICE_ADDR, 0x39, &reg, 1);
                              if (output_en & 0x04)
                         {
                             if (q1_single)
@@ -301,23 +303,23 @@ int main()
                         {
                             if (q2_single)
                             {
-                                gpio_put(2, !gpio_get(2));
-                                gpio_put(3, !gpio_get(3));
+                                gpio_put(2, 0);
+                                gpio_put(3, 0);
                                 sleep_us(20);
-                                gpio_put(2, !gpio_get(2));
-                                gpio_put(3, !gpio_get(3));
+                                gpio_put(2, 1);
+                                gpio_put(3, 1);
                                 printf("Q2 impulse started\n");
                             }
                             else
                             {
-                                gpio_put(2, !gpio_get(2));
-                                gpio_put(3, !gpio_get(3));
+                                gpio_put(2, 0);
+                                gpio_put(3, 0);
                                 printf("Q2 impulse started\n");
                             }
                         }
 
 
-                        else{
+                    }else{
                         if (output_en & 0x04)
                         {
                             if (q1_single)
@@ -332,7 +334,7 @@ int main()
                             }
                             else
                             {
-                                reg |= (1 << 2);
+                                reg |= (1 << 3);
                                 i2c_write_reg16(I2C_PORT, DEVICE_ADDR, 0x39, &reg, 1); //Q1
                                 printf("Q1 impulse started\n");
                             }
@@ -350,7 +352,7 @@ int main()
                             }
                             else
                             {
-                                reg |= (1 << 3);
+                                reg |= (1 << 2);
                                 i2c_write_reg16(I2C_PORT, DEVICE_ADDR, 0x39, &reg, 1); // Q2
                                 printf("Q2 impulse started\n");
                             }
@@ -358,7 +360,6 @@ int main()
                     }
                         printf("\n");
                         break;
-                    }
                 }
 
                     case CMD_IMPULSE_STOP: { //Wyłącznie wyjść
