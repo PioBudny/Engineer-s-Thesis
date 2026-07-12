@@ -279,7 +279,7 @@ tk.Button(top_frame, text="Read Registers", command=read_regs).pack(side=tk.RIGH
 #tk.Button(top_frame, text="GPIO_Control", command=default_config).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Innitial config", command=Innitial_Config).pack(side=tk.RIGHT, padx=5)
 #tk.Button(top_frame, text="Calibrate PLL", command=Calibrate_PLL).pack(side=tk.RIGHT, padx=5)
-tk.Button(top_frame, text="Calculator", command=Calculator).pack(side=tk.RIGHT, padx=5)
+#tk.Button(top_frame, text="Calculator", command=Calculator).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Impedance Wave", command=Impedance_Wave).pack(side=tk.RIGHT, padx=5)
 
 q1_var                = tk.BooleanVar()

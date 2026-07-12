@@ -1,6 +1,7 @@
 import tkinter as tk
 import csv
 from tkinter import filedialog, messagebox
+from tkinter import ttk
 
 
 def Impedance_Wave(root, close_impedance_window):
@@ -23,7 +24,8 @@ def Impedance_Wave(root, close_impedance_window):
 
     csv_path = tk.StringVar()
     z0_var = tk.StringVar(value="50")
-    vf_var = tk.StringVar(value="0.66")
+    param_type_var = tk.StringVar(value="VF")  # "VF" lub "ER"
+    param_value_var = tk.StringVar(value="0.85")  # domyślna wartość dla VF
 
     tk.Label(top_frame, text="CSV file:").pack(side=tk.LEFT)
 
@@ -50,14 +52,29 @@ def Impedance_Wave(root, close_impedance_window):
     tk.Label(settings_frame, text="Z0 (Ohm):").pack(side=tk.LEFT)
     tk.Entry(settings_frame, textvariable=z0_var, width=8).pack(side=tk.LEFT, padx=(4, 12))
 
-    tk.Label(settings_frame, text="VF:").pack(side=tk.LEFT)
-    tk.Entry(settings_frame, textvariable=vf_var, width=8).pack(side=tk.LEFT, padx=(4, 12))
+    # Wybór między ER a VF z listy
+    tk.Label(settings_frame, text="Parameter:").pack(side=tk.LEFT, padx=(12, 4))
+
+    def on_param_type_change(event=None):
+        if param_type_var.get() == "VF":
+            param_value_var.set("0.85")
+        else:  # ER
+            param_value_var.set("4.3")
+
+    param_combo = ttk.Combobox(
+        settings_frame,
+        textvariable=param_type_var,
+        values=["VF", "ER"],
+        state="readonly",
+        width=6
+    )
+    param_combo.pack(side=tk.LEFT, padx=(0, 8))
+    param_combo.bind("<<ComboboxSelected>>", on_param_type_change)
+
+    tk.Entry(settings_frame, textvariable=param_value_var, width=8).pack(side=tk.LEFT, padx=(0, 12))
 
     variables_text = (
-        "Z0 - reference impedance, VF - velocity factor, "
-        "Voffset - average before impulse, Vcorr - V - Voffset, "
-        "Vimpuls - incident pulse amplitude, Gamma - reflection coefficient, "
-        "d - distance"
+        "Z0 - reference impedance, VF - velocity factor (0-1), ER - relative permittivity (>1)"
     )
     tk.Label(
         settings_frame,
@@ -66,6 +83,21 @@ def Impedance_Wave(root, close_impedance_window):
         justify=tk.LEFT,
         wraplength=520
     ).pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+    # ────────────────────────────────────────────────────────────────
+    # Info o obliczeniach (info_var jest ustawiane w on_calculate_zd)
+    # ────────────────────────────────────────────────────────────────
+
+    info_var = tk.StringVar(value="Brak obliczeń — wciśnij Calculate Z(d)")
+
+    info_label = tk.Label(
+        impedance_window,
+        textvariable=info_var,
+        anchor="w",
+        justify=tk.LEFT,
+        font=("Consolas", 9)
+    )
+    info_label.pack(fill=tk.X, padx=10, pady=(0, 8))
 
     # ────────────────────────────────────────────────────────────────
     # Wykres
@@ -102,55 +134,6 @@ def Impedance_Wave(root, close_impedance_window):
 
     math_canvas = tk.Canvas(math_frame, width=240, height=350, bg="white", highlightthickness=0)
     math_canvas.pack(fill=tk.X)
-
-    def draw_fraction(canvas, x, y, numerator, denominator, prefix="", suffix=""):
-        canvas.create_text(x, y + 12, text=prefix, anchor="w", font=("Arial", 10))
-        frac_x = x + 70
-        canvas.create_text(frac_x, y, text=numerator, anchor="center", font=("Arial", 10))
-        canvas.create_line(frac_x - 48, y + 12, frac_x + 48, y + 12, width=1)
-        canvas.create_text(frac_x, y + 26, text=denominator, anchor="center", font=("Arial", 10))
-        canvas.create_text(frac_x + 56, y + 12, text=suffix, anchor="w", font=("Arial", 10))
-
-    def draw_math_formulas():
-        math_canvas.delete("all")
-        draw_fraction(math_canvas, 2, 8, "1", "N", "Voffset =", "* sum(Vpre)")
-        math_canvas.create_text(
-            2,
-            58,
-            text="Vcorr = V - Voffset",
-            anchor="w",
-            font=("Arial", 10)
-        )
-        math_canvas.create_text(
-            2,
-            84,
-            text="Vimpuls = max(Vcorr)",
-            anchor="w",
-            font=("Arial", 10)
-        )
-        draw_fraction(math_canvas, 2, 112, "Vcorr", "Vimpuls", "Gamma =")
-        math_canvas.create_text(
-            2,
-            156,
-            text="-0.99 <= Gamma <= 0.99",
-            anchor="w",
-            font=("Arial", 10)
-        )
-        draw_fraction(math_canvas, 2, 184, "1 + Gamma", "1 - Gamma", "Z = Z0 *")
-        draw_fraction(math_canvas, 2, 238, "(t - t0) * c * VF", "2", "d =")
-        math_canvas.create_text(
-            2,
-            286,
-            text="Peeling: remove earlier layer reflections",
-            anchor="w",
-            font=("Arial", 9)
-        )
-        math_canvas.create_text(2, 326, text="Gamma_local =", anchor="w", font=("Arial", 10))
-        math_canvas.create_text(170, 312, text="Gamma_meas", anchor="center", font=("Arial", 10))
-        math_canvas.create_line(112, 326, 228, 326, width=1)
-        math_canvas.create_text(170, 340, text="prod(1 - Gamma_prev^2)", anchor="center", font=("Arial", 9))
-
-    math_canvas.after(50, draw_math_formulas)
 
     raw_data = {
         "x_values": [],
@@ -394,6 +377,12 @@ def Impedance_Wave(root, close_impedance_window):
             return
 
         x_values, y_values, title, x_label, y_label = loaded
+
+        # Przelicz czas z sekund na nanosekundy (tylko dla wyświetlania surowych danych)
+        if x_label == "Time (s)":
+            x_values = [x * 1e9 for x in x_values]
+            x_label = "Time (ns)"
+
         draw_chart(
             raw_canvas,
             raw_data,
@@ -410,18 +399,27 @@ def Impedance_Wave(root, close_impedance_window):
 
         try:
             z0 = float(z0_var.get())
-            vf = float(vf_var.get())
+            param_value = float(param_value_var.get())
+            param_type = param_type_var.get()
         except ValueError:
-            raise ValueError("Z0 and VF must be numeric.")
+            raise ValueError("Z0 and parameter value must be numeric.")
 
         if z0 <= 0:
             raise ValueError("Z0 must be greater than zero.")
 
-        if vf > 1:
-            vf /= 100
-
-        if not (0 < vf <= 1):
-            raise ValueError("VF must be between 0 and 1, or percent value like 66.")
+        # Konwersja ER i VF
+        if param_type == "VF":
+            vf = param_value
+            if vf > 1:
+                vf /= 100
+            if not (0 < vf <= 1):
+                raise ValueError("VF must be between 0 and 1, or percent value like 66.")
+            er = 1.0 / (vf ** 2)  # er = 1 / vf^2 dla non-magnetic materials
+        else:  # ER
+            er = param_value
+            if er <= 1:
+                raise ValueError("ER must be greater than 1.")
+            vf = 1.0 / (er ** 0.5)  # vf = 1 / sqrt(er)
 
         if len(times) < 2:
             raise ValueError("CSV file must contain at least two samples.")
@@ -429,126 +427,170 @@ def Impedance_Wave(root, close_impedance_window):
         def average(values):
             return sum(values) / len(values)
 
+        def find_first_above_threshold(values, start_index, threshold):
+            """Zwraca indeks pierwszej próbki (od start_index), której |wartość|
+            przekracza threshold, albo None, jeśli żadna nie przekracza."""
+            for i in range(start_index, len(values)):
+                if abs(values[i]) >= threshold:
+                    return i
+            return None
+
+        def find_pulse_peak_and_end(values, start_index, noise_threshold):
+            """Od start_index znajduje indeks szczytu (maks. |wartość|),
+            a potem pierwszy indeks po szczycie, gdzie sygnał znów spada
+            poniżej noise_threshold. Używane zarówno dla impulsu wysłanego,
+            jak i dla odbicia - stąd wspólna funkcja."""
+            peak_index = start_index + max(
+                range(len(values) - start_index),
+                key=lambda i: abs(values[start_index + i])
+            )
+
+            end_index = len(values) - 1
+            for i in range(peak_index, len(values)):
+                if abs(values[i]) < noise_threshold:
+                    end_index = i
+                    break
+
+            return peak_index, end_index
+
+        # ── Krok 1: znajdź impulse_index (start impulsu #1 - wysłanego) ──
+        # Jeśli czas przechodzi przez t=0, to jest to najpewniejszy wyznacznik
+        # startu impulsu (moment wyzwolenia oscyloskopu). W przeciwnym razie
+        # dopiero wtedy liczymy prowizoryczny offset/próg na potrzeby detekcji
+        # amplitudowej - nie robimy tego niepotrzebnie za każdym razem.
         def find_impulse_index():
             if min(times) < 0 < max(times):
                 for i, t in enumerate(times):
                     if t >= 0:
                         return i
 
-            initial_count = max(3, int(len(voltages) * 0.1))
-            initial_offset = average(voltages[:initial_count])
-            initial_noise = average([abs(v - initial_offset) for v in voltages[:initial_count]])
-            corrected_preview = [v - initial_offset for v in voltages]
-            peak = max(abs(v) for v in corrected_preview)
-            threshold = max(initial_noise * 6, peak * 0.1, 1e-12)
+            prelim_count = max(3, int(len(voltages) * 0.05))
+            prelim_offset = average(voltages[:prelim_count])
+            prelim_corrected = [v - prelim_offset for v in voltages]
+            prelim_noise = average([abs(v) for v in prelim_corrected[:prelim_count]])
+            prelim_peak = max(abs(v) for v in prelim_corrected)
+            prelim_threshold = max(prelim_noise * 6, prelim_peak * 0.1, 1e-12)
 
-            for i, value in enumerate(corrected_preview):
-                if abs(value) >= threshold:
-                    return i
-
-            return initial_count
+            index = find_first_above_threshold(prelim_corrected, 0, prelim_threshold)
+            return index if index is not None else prelim_count
 
         impulse_index = find_impulse_index()
 
-        if impulse_index <= 0:
-            offset_count = max(1, int(len(voltages) * 0.05))
-        else:
-            offset_count = impulse_index
-
-        voltage_offset = average(voltages[:offset_count])
+        # ── Krok 2: właściwy offset, liczony od początku danych
+        # do faktycznie znalezionego początku impulsu ──
+        baseline_samples = voltages[:impulse_index] if impulse_index >= 1 else voltages[:max(3, int(len(voltages) * 0.05))]
+        voltage_offset = average(baseline_samples)
         corrected_voltages = [v - voltage_offset for v in voltages]
-        skip_samples = max(10, int(len(voltages) * 0.01))
-        calculation_start = min(impulse_index + skip_samples, len(voltages) - 1)
-        impulse_samples = corrected_voltages[calculation_start:]
+        noise_level = average([abs(v) for v in corrected_voltages[:len(baseline_samples)]])
 
-        if not impulse_samples:
-            raise ValueError("Could not find samples after impulse start.")
+        peak = max(abs(v) for v in corrected_voltages)
+        noise_threshold = max(noise_level * 4, peak * 0.02, 1e-12)
 
-        incident_voltage = max(impulse_samples)
+        # ── Krok 3: znajdź szczyt i koniec impulsu #1 (wysłanego) ──
+        peak_index, pulse_end_index = find_pulse_peak_and_end(
+            corrected_voltages, impulse_index, noise_threshold
+        )
+
+        calculation_start = min(pulse_end_index + 1, len(voltages) - 1)
+
+        # ── Krok 4: napięcie padające (szczyt impulsu #1) ──
+        incident_voltage = corrected_voltages[peak_index]
 
         if abs(incident_voltage) < 1e-12:
             raise ValueError("Incident pulse amplitude is too close to zero.")
 
-        if incident_voltage < 0:
-            raise ValueError("Incident pulse amplitude must be positive after offset removal.")
+        # ── Krok 5: znajdź impuls #2 (odbicie) i miejsce jego zakończenia ──
+        reflection_start_index = find_first_above_threshold(
+            corrected_voltages, calculation_start, noise_threshold
+        )
+
+        if reflection_start_index is not None:
+            reflection_peak_index, reflection_end_index = find_pulse_peak_and_end(
+                corrected_voltages, reflection_start_index, noise_threshold
+            )
+            # Mały margines, żeby nie uciąć w połowie opadającego zbocza
+            margin_samples = max(3, int(len(corrected_voltages) * 0.005))
+            plot_end_index = min(reflection_end_index + margin_samples, len(corrected_voltages) - 1)
+        else:
+            # Nie znaleziono żadnego odbicia powyżej progu szumu - pokaż wszystko, co jest
+            reflection_peak_index = calculation_start
+            plot_end_index = len(corrected_voltages) - 1
 
         return {
             "c": c,
             "z0": z0,
             "vf": vf,
+            "er": er,
+            "param_type": param_type,
+            "times": times,
             "impulse_index": impulse_index,
+            "peak_index": peak_index,
             "calculation_start": calculation_start,
+            "reflection_peak_index": reflection_peak_index,
+            "plot_end_index": plot_end_index,
             "voltage_offset": voltage_offset,
             "corrected_voltages": corrected_voltages,
             "incident_voltage": incident_voltage,
-            "t0": times[impulse_index]
+            "t0": times[peak_index]
         }
 
-    def calculate_impedance_vs_distance(times, voltages):
-        data = prepare_tdr_data(times, voltages)
+    def calculate_impedance_vs_distance(data):
+
+        # ── Zmienne potrzebne do obliczeń ──
+        # c                  - prędkość światła w próżni [m/s]
+        # z0                 - impedancja odniesienia (linii/generatora) [Ohm]
+        # vf                 - współczynnik skrócenia (velocity factor) [-]
+        # times              - lista czasów próbek [s]
+        # calculation_start  - indeks pierwszej próbki liczonej jako odbicie
+        #                      (czyli tuż po impulsie #1 - wysłanym)
+        # plot_end_index     - indeks końca impulsu #2 (odbicia) + margines;
+        #                      wszystko po nim jest odcinane (to echa/szum,
+        #                      nie nowa informacja o linii)
+        # corrected_voltages - napięcia po odjęciu offsetu (zera) [V]
+        # incident_voltage   - napięcie padające Vi, czyli szczyt
+        #                      impulsu #1 (wysłanego) [V]
+        # t0                 - czas odniesienia (x=0), czas szczytu
+        #                      impulsu #1 [s]
+        #
+        # Wzory (pulse-TDR: brak drugiego odjęcia Vi, patrz dyskusja):
+        #   Gamma(t) = Vcorr(t) / Vi                 (współczynnik odbicia)
+        #   x(t)     = (t - t0) * c * vf / 2          (odległość, droga w obie strony)
+        #   Z(t)     = Z0 * (1 + Gamma) / (1 - Gamma) (impedancja lokalna)
+
         c = data["c"]
         z0 = data["z0"]
         vf = data["vf"]
+        er = data["er"]
+        param_type = data["param_type"]
+        times = data["times"]
         calculation_start = data["calculation_start"]
+        plot_end_index = data["plot_end_index"]
         corrected_voltages = data["corrected_voltages"]
         incident_voltage = data["incident_voltage"]
         t0 = data["t0"]
 
+        # Jeśli został wybrany ER, przelicz VF z ER
+        if param_type == "ER":
+            vf = 1.0 / (er ** 0.5)
+
         distances = []
         impedances = []
 
-        for t, voltage in zip(times[calculation_start:], corrected_voltages[calculation_start:]):
-            gamma = voltage / incident_voltage
-            gamma = max(min(gamma, 0.99), -0.99)
-            denominator = 1 - gamma
+        reflection_times = times[calculation_start:plot_end_index + 1]
+        reflection_voltages = corrected_voltages[calculation_start:plot_end_index + 1]
 
-            if abs(denominator) < 1e-12:
-                continue
+        for t, voltage in zip(reflection_times, reflection_voltages):
+            gamma = voltage / incident_voltage
+            gamma = max(min(gamma, 0.99), -0.99)  # zabezpieczenie przed dzieleniem przez 0
 
             distance = (t - t0) * c * vf / 2
-            impedance = z0 * (1 + gamma) / denominator
+            impedance = z0 * (1 + gamma) / (1 - gamma)
 
             distances.append(distance)
             impedances.append(impedance)
 
         if not distances:
             raise ValueError("Could not calculate impedance from this CSV data.")
-
-        return distances, impedances, data["voltage_offset"], incident_voltage
-
-    def calculate_impedance_layer_stripping(times, voltages):
-        data = prepare_tdr_data(times, voltages)
-        c = data["c"]
-        z0 = data["z0"]
-        vf = data["vf"]
-        calculation_start = data["calculation_start"]
-        corrected_voltages = data["corrected_voltages"]
-        incident_voltage = data["incident_voltage"]
-        t0 = data["t0"]
-
-        distances = []
-        impedances = []
-        transmission_product = 1.0
-
-        for t, voltage in zip(times[calculation_start:], corrected_voltages[calculation_start:]):
-            measured_gamma = voltage / incident_voltage
-
-            if abs(transmission_product) < 1e-6:
-                break
-
-            local_gamma = measured_gamma / transmission_product
-            local_gamma = max(min(local_gamma, 0.99), -0.99)
-
-            distance = (t - t0) * c * vf / 2
-            impedance = z0 * (1 + local_gamma) / (1 - local_gamma)
-
-            distances.append(distance)
-            impedances.append(impedance)
-
-            transmission_product *= max(1 - local_gamma * local_gamma, 1e-6)
-
-        if not distances:
-            raise ValueError("Could not calculate layer stripping impedance from this CSV data.")
 
         return distances, impedances
 
@@ -560,46 +602,39 @@ def Impedance_Wave(root, close_impedance_window):
         times, voltages, _, _, _ = loaded
 
         try:
-            distances, impedances, _, _ = calculate_impedance_vs_distance(times, voltages)
+            data = prepare_tdr_data(times, voltages)
         except ValueError as e:
             messagebox.showerror("Calculation error", str(e))
             return
 
-        title = "Charakterystyka impedancji od odleglosci"
+        info_text = (
+            f"impulse_index={data['impulse_index']}  "
+            f"peak_index={data['peak_index']}  "
+            f"calc_start={data['calculation_start']}  "
+            f"reflection_peak={data['reflection_peak_index']}  "
+            f"plot_end={data['plot_end_index']}  "
+            f"t0={data['t0']:.4e}s  "
+            f"Voffset={data['voltage_offset']:.5f}V  "
+            f"Vi={data['incident_voltage']:.5f}V"
+        )
+        info_var.set(info_text)
+        print(info_text)
+
+        try:
+            distances, impedances = calculate_impedance_vs_distance(data)
+        except ValueError as e:
+            messagebox.showerror("Calculation error", str(e))
+            return
+
         draw_chart(
             impedance_canvas,
             impedance_data,
             distances,
             impedances,
-            title,
+            "Charakterystyka impedancji od odleglosci",
             "Distance (m)",
             "Impedance (Ohm)",
             "Press Calculate Z(d)"
-        )
-
-    def on_calculate_peeling_zd():
-        loaded = get_loaded_csv()
-        if not loaded:
-            return
-
-        times, voltages, _, _, _ = loaded
-
-        try:
-            distances, impedances = calculate_impedance_layer_stripping(times, voltages)
-        except ValueError as e:
-            messagebox.showerror("Calculation error", str(e))
-            return
-
-        title = "Charakterystyka impedancji od odleglosci - peeling"
-        draw_chart(
-            impedance_canvas,
-            impedance_data,
-            distances,
-            impedances,
-            title,
-            "Distance (m)",
-            "Impedance (Ohm)",
-            "Press Peeling Z(d)"
         )
 
     tk.Button(
@@ -622,13 +657,6 @@ def Impedance_Wave(root, close_impedance_window):
         width=14,
         command=on_calculate_zd
     ).pack(side=tk.LEFT, padx=(0, 5))
-
-    tk.Button(
-        top_frame,
-        text="Peeling Z(d)",
-        width=14,
-        command=on_calculate_peeling_zd
-    ).pack(side=tk.LEFT)
 
     impedance_window.after(
         50,
