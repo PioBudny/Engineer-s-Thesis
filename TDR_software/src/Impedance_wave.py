@@ -78,7 +78,7 @@ def Impedance_Wave(root, close_impedance_window):
     tk.Entry(settings_frame, textvariable=param_value_var, width=8).pack(side=tk.LEFT, padx=(0, 12))
 
     variables_text = (
-        "Z0 - reference impedance, VF - velocity factor (0-1), ER - relative permittivity (>1)"
+        "Z0 - reference impedance, VF - velocity factor (0-1), ER - relative permittivity (>1). "
     )
     tk.Label(
         settings_frame,
@@ -89,19 +89,10 @@ def Impedance_Wave(root, close_impedance_window):
     ).pack(side=tk.LEFT, fill=tk.X, expand=True)
 
     # ────────────────────────────────────────────────────────────────
-    # Info o obliczeniach (info_var jest ustawiane w on_calculate_zd)
+    # Info o obliczeniach jest ukryta z interfejsu
     # ────────────────────────────────────────────────────────────────
 
-    info_var = tk.StringVar(value="Brak obliczeń — wciśnij Calculate Z(d)")
-
-    info_label = tk.Label(
-        impedance_window,
-        textvariable=info_var,
-        anchor="w",
-        justify=tk.LEFT,
-        font=("Consolas", 9)
-    )
-    info_label.pack(fill=tk.X, padx=10, pady=(0, 8))
+    info_var = tk.StringVar(value="")
 
     # ────────────────────────────────────────────────────────────────
     # Wykres
@@ -125,19 +116,172 @@ def Impedance_Wave(root, close_impedance_window):
     impedance_canvas = tk.Canvas(impedance_chart_frame, bg="white")
     impedance_canvas.pack(fill=tk.BOTH, expand=True)
 
-    math_frame = tk.Frame(content_frame, width=250)
+    math_frame = tk.Frame(content_frame, width=260)
     math_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=(10, 0))
     math_frame.pack_propagate(False)
 
+    # ────────────────────────────────────────────────────────────────
+    # Tabela segmentów VF/ER (rozne osrodki wzdluz DUT)
+    #
+    # Kazdy wiersz nadpisuje globalne VF/ER tylko w podanym zakresie
+    # odleglosci [start, end) (w metrach). Zakresy nieobjete zadnym
+    # segmentem (w tym wszystko powyzej najdalszego segmentu) nadal
+    # licza sie globalnym VF/ER z gornego paska ustawien.
+    # ────────────────────────────────────────────────────────────────
+
     tk.Label(
         math_frame,
-        text="Math",
-        font=("Arial", 10, "bold"),
-        anchor="w"
-    ).pack(fill=tk.X, pady=(0, 6))
+        text="Segments with different Vf/ER",
+        anchor="w",
+        justify=tk.LEFT,
+        font=("Arial", 8, "bold"),
+        wraplength=240
+    ).pack(fill=tk.X, pady=(0, 4))
 
-    math_canvas = tk.Canvas(math_frame, width=240, height=350, bg="white", highlightthickness=0)
-    math_canvas.pack(fill=tk.X)
+    segments_list = []  # [{"start": float, "end": float, "param_type": "VF"/"ER", "param_value": float}, ...]
+
+    segments_tree = ttk.Treeview(
+        math_frame,
+        columns=("start", "end", "type", "value"),
+        show="headings",
+        height=8
+    )
+    segments_tree.heading("start", text="Start (m)")
+    segments_tree.heading("end", text="End (m)")
+    segments_tree.heading("type", text="Typ")
+    segments_tree.heading("value", text="Wartosc")
+    segments_tree.column("start", width=55, anchor="center")
+    segments_tree.column("end", width=55, anchor="center")
+    segments_tree.column("type", width=40, anchor="center")
+    segments_tree.column("value", width=60, anchor="center")
+    segments_tree.pack(fill=tk.X, pady=(0, 6))
+
+    seg_start_var = tk.StringVar()
+    seg_end_var = tk.StringVar()
+    seg_type_var = tk.StringVar(value="VF")
+    seg_value_var = tk.StringVar()
+
+    seg_row1 = tk.Frame(math_frame)
+    seg_row1.pack(fill=tk.X, pady=(0, 2))
+    tk.Label(seg_row1, text="Start:", width=5, anchor="w").pack(side=tk.LEFT)
+    tk.Entry(seg_row1, textvariable=seg_start_var, width=7).pack(side=tk.LEFT, padx=(0, 6))
+    tk.Label(seg_row1, text="End:", width=4, anchor="w").pack(side=tk.LEFT)
+    tk.Entry(seg_row1, textvariable=seg_end_var, width=7).pack(side=tk.LEFT)
+
+    seg_row2 = tk.Frame(math_frame)
+    seg_row2.pack(fill=tk.X, pady=(0, 4))
+    seg_type_combo = ttk.Combobox(
+        seg_row2,
+        textvariable=seg_type_var,
+        values=["VF", "ER"],
+        state="readonly",
+        width=5
+    )
+    seg_type_combo.pack(side=tk.LEFT)
+    tk.Entry(seg_row2, textvariable=seg_value_var, width=9).pack(side=tk.LEFT, padx=(6, 0))
+
+    seg_buttons_frame = tk.Frame(math_frame)
+    seg_buttons_frame.pack(fill=tk.X, pady=(0, 8))
+
+    def param_to_vf(param_type, value):
+        """Waliduje i przelicza pojedyncza wartosc VF/ER na VF. Rzuca
+        ValueError z czytelnym komunikatem, jesli wartosc jest niepoprawna.
+        Wspolna logika, uzywana zarowno dla ustawien globalnych, jak i dla
+        kazdego segmentu w tabeli."""
+        if param_type == "VF":
+            vf = value
+            if vf > 1:
+                vf /= 100
+            if not (0 < vf <= 1):
+                raise ValueError("VF must be between 0 and 1, or percent value like 66.")
+            return vf
+        else:  # ER
+            er = value
+            if er <= 1:
+                raise ValueError("ER must be greater than 1.")
+            return 1.0 / (er ** 0.5)
+
+    def refresh_segments_tree():
+        segments_tree.delete(*segments_tree.get_children())
+        for i, seg in enumerate(sorted(segments_list, key=lambda s: s["start"])):
+            segments_tree.insert(
+                "", "end", iid=str(i),
+                values=(
+                    f"{seg['start']:.3f}",
+                    f"{seg['end']:.3f}",
+                    seg["param_type"],
+                    f"{seg['param_value']:.4g}"
+                )
+            )
+
+    def on_add_segment():
+        try:
+            start = float(seg_start_var.get())
+            end = float(seg_end_var.get())
+            value = float(seg_value_var.get())
+        except ValueError:
+            messagebox.showerror("Segment error", "Start, End i Wartosc musza byc liczbami.")
+            return
+
+        if start < 0 or end <= start:
+            messagebox.showerror("Segment error", "Musi byc: 0 <= Start < End.")
+            return
+
+        param_type = seg_type_var.get()
+
+        try:
+            param_to_vf(param_type, value)  # tylko walidacja
+        except ValueError as e:
+            messagebox.showerror("Segment error", str(e))
+            return
+
+        # Sprawdz nakladanie sie z istniejacymi segmentami
+        for seg in segments_list:
+            if start < seg["end"] and end > seg["start"]:
+                messagebox.showerror(
+                    "Segment error",
+                    f"Zakres {start:g}-{end:g} m naklada sie z istniejacym "
+                    f"segmentem {seg['start']:g}-{seg['end']:g} m."
+                )
+                return
+
+        segments_list.append({
+            "start": start,
+            "end": end,
+            "param_type": param_type,
+            "param_value": value
+        })
+
+        seg_start_var.set("")
+        seg_end_var.set("")
+        seg_value_var.set("")
+
+        refresh_segments_tree()
+
+    def on_remove_segment():
+        selection = segments_tree.selection()
+        if not selection:
+            messagebox.showwarning("No selection", "Zaznacz segment do usuniecia.")
+            return
+
+        sorted_segments = sorted(segments_list, key=lambda s: s["start"])
+        indices_to_remove = sorted((int(iid) for iid in selection), reverse=True)
+
+        for idx in indices_to_remove:
+            segments_list.remove(sorted_segments[idx])
+
+        refresh_segments_tree()
+
+    def on_clear_segments():
+        if not segments_list:
+            return
+        if messagebox.askyesno("Clear segments", "Usunac wszystkie segmenty?"):
+            segments_list.clear()
+            refresh_segments_tree()
+
+    tk.Button(seg_buttons_frame, text="Add", width=7, command=on_add_segment).pack(side=tk.LEFT, padx=(0, 4))
+    tk.Button(seg_buttons_frame, text="Remove", width=7, command=on_remove_segment).pack(side=tk.LEFT, padx=(0, 4))
+    tk.Button(seg_buttons_frame, text="Clear", width=7, command=on_clear_segments).pack(side=tk.LEFT)
 
     raw_data = {
         "x_values": [],
@@ -790,6 +934,74 @@ def Impedance_Wave(root, close_impedance_window):
             reset_bounds=True
         )
 
+    def build_time_to_distance_converter(segments, default_vf, c):
+        """Buduje funkcje przeliczajaca ROUND-TRIP czas (t - t0) na odleglosc,
+        uwzgledniajac rozne VF w roznych zakresach odleglosci (segmenty).
+
+        Segmenty NIE moga sie nakladac (zapewnia to walidacja przy dodawaniu).
+        Zakresy nieobjete zadnym segmentem (luki miedzy nimi oraz wszystko
+        powyzej ostatniego segmentu) licza sie z 'default_vf'.
+
+        Idea: fala biegnie z lokalna predkoscia c*vf(x) w kazdym punkcie x
+        wzdluz DUT. Czas propagacji w JEDNA strone do punktu x to:
+            t_one_way(x) = integral_0^x [ 1 / (c * vf(x')) ] dx'
+        Poniewaz vf jest stale w kazdym segmencie, ta calka to po prostu
+        suma (dlugosc_segmentu / (c*vf_segmentu)) po wszystkich segmentach
+        przed x, plus czesciowy kawalek w segmencie, w ktorym lezy x.
+
+        Zmierzony (t - t0) to czas w OBIE strony, wiec dzielimy przez 2,
+        zeby dostac t_one_way, a potem szukamy, ktoremu x ono odpowiada
+        (odwrotnosc powyzszej funkcji, ktora jest odcinkowo liniowa i
+        monotoniczna - latwo ja odwrocic segment po segmencie)."""
+
+        segs = sorted(segments, key=lambda s: s["start"])
+
+        # Uzupelnij luki (w tym przed pierwszym segmentem) segmentami
+        # o domyslnym VF, zeby cala os odleglosci od 0 byla pokryta w sposob
+        # ciagly az do konca ostatniego zdefiniowanego segmentu.
+        full_segments = []
+        cursor = 0.0
+        for seg in segs:
+            if seg["start"] > cursor:
+                full_segments.append({"start": cursor, "end": seg["start"], "vf": default_vf})
+            full_segments.append({"start": seg["start"], "end": seg["end"], "vf": seg["vf"]})
+            cursor = seg["end"]
+
+        # Skumulowany czas propagacji (jedna strona) do poczatku/konca
+        # kazdego segmentu.
+        cum_time = 0.0
+        segments_with_time = []
+        for seg in full_segments:
+            length = seg["end"] - seg["start"]
+            one_way_time = length / (c * seg["vf"])
+            segments_with_time.append({
+                "start": seg["start"],
+                "end": seg["end"],
+                "vf": seg["vf"],
+                "t_start": cum_time,
+                "t_end": cum_time + one_way_time
+            })
+            cum_time += one_way_time
+
+        def distance_from_roundtrip_time(dt_roundtrip):
+            one_way_time = dt_roundtrip / 2.0
+
+            if one_way_time <= 0 or not segments_with_time:
+                return one_way_time * c * default_vf
+
+            for seg in segments_with_time:
+                if seg["t_start"] <= one_way_time <= seg["t_end"]:
+                    dt_local = one_way_time - seg["t_start"]
+                    return seg["start"] + dt_local * c * seg["vf"]
+
+            # Poza ostatnim zdefiniowanym/domyslnym segmentem - ekstrapoluj
+            # dalej z domyslnym VF.
+            last = segments_with_time[-1]
+            dt_local = one_way_time - last["t_end"]
+            return last["end"] + dt_local * c * default_vf
+
+        return distance_from_roundtrip_time
+
     def prepare_tdr_data(times, voltages):
         c = 299792458.0
 
@@ -803,19 +1015,13 @@ def Impedance_Wave(root, close_impedance_window):
         if z0 <= 0:
             raise ValueError("Z0 must be greater than zero.")
 
-        # Konwersja ER i VF
+        # Konwersja globalnego ER/VF (uzywana tam, gdzie tabela segmentow
+        # nie definiuje nic innego dla danej odleglosci)
+        vf = param_to_vf(param_type, param_value)
         if param_type == "VF":
-            vf = param_value
-            if vf > 1:
-                vf /= 100
-            if not (0 < vf <= 1):
-                raise ValueError("VF must be between 0 and 1, or percent value like 66.")
             er = 1.0 / (vf ** 2)  # er = 1 / vf^2 dla non-magnetic materials
-        else:  # ER
+        else:
             er = param_value
-            if er <= 1:
-                raise ValueError("ER must be greater than 1.")
-            vf = 1.0 / (er ** 0.5)  # vf = 1 / sqrt(er)
 
         if len(times) < 2:
             raise ValueError("CSV file must contain at least two samples.")
@@ -934,7 +1140,9 @@ def Impedance_Wave(root, close_impedance_window):
         # ── Zmienne potrzebne do obliczeń ──
         # c                  - prędkość światła w próżni [m/s]
         # z0                 - impedancja odniesienia (linii/generatora) [Ohm]
-        # vf                 - współczynnik skrócenia (velocity factor) [-]
+        # vf                 - globalny wspolczynnik skrocenia (velocity
+        #                      factor), uzywany tam gdzie tabela segmentow
+        #                      nie definiuje nic innego dla danej odleglosci
         # times              - lista czasów próbek [s]
         # calculation_start  - indeks pierwszej próbki liczonej jako odbicie
         #                      (czyli tuż po impulsie #1 - wysłanym)
@@ -948,15 +1156,15 @@ def Impedance_Wave(root, close_impedance_window):
         #                      impulsu #1 [s]
         #
         # Wzory (pulse-TDR: brak drugiego odjęcia Vi, patrz dyskusja):
-        #   Gamma(t) = Vcorr(t) / Vi                 (współczynnik odbicia)
-        #   x(t)     = (t - t0) * c * vf / 2          (odległość, droga w obie strony)
-        #   Z(t)     = Z0 * (1 + Gamma) / (1 - Gamma) (impedancja lokalna)
+        #   Gamma(t) = Vcorr(t) / Vi                  (współczynnik odbicia)
+        #   x(t)     = f_piecewise(t - t0)             (odległość - patrz
+        #              build_time_to_distance_converter; przy braku
+        #              segmentow rownowazne (t-t0)*c*vf/2)
+        #   Z(t)     = Z0 * (1 + Gamma) / (1 - Gamma)  (impedancja lokalna)
 
         c = data["c"]
         z0 = data["z0"]
         vf = data["vf"]
-        er = data["er"]
-        param_type = data["param_type"]
         times = data["times"]
         calculation_start = data["calculation_start"]
         plot_end_index = data["plot_end_index"]
@@ -964,9 +1172,18 @@ def Impedance_Wave(root, close_impedance_window):
         incident_voltage = data["incident_voltage"]
         t0 = data["t0"]
 
-        # Jeśli został wybrany ER, przelicz VF z ER
-        if param_type == "ER":
-            vf = 1.0 / (er ** 0.5)
+        # Zbuduj segmenty (VF/ER->VF) z tabeli "Math"; nadpisuja globalne vf
+        # tylko w swoich zakresach odleglosci.
+        raw_segments = [
+            {
+                "start": seg["start"],
+                "end": seg["end"],
+                "vf": param_to_vf(seg["param_type"], seg["param_value"])
+            }
+            for seg in segments_list
+        ]
+
+        distance_from_roundtrip_time = build_time_to_distance_converter(raw_segments, vf, c)
 
         distances = []
         impedances = []
@@ -978,7 +1195,7 @@ def Impedance_Wave(root, close_impedance_window):
             gamma = voltage / incident_voltage
             gamma = max(min(gamma, 0.99), -0.99)  # zabezpieczenie przed dzieleniem przez 0
 
-            distance = (t - t0) * c * vf / 2
+            distance = distance_from_roundtrip_time(t - t0)
             impedance = z0 * (1 + gamma) / (1 - gamma)
 
             distances.append(distance)
@@ -1002,6 +1219,7 @@ def Impedance_Wave(root, close_impedance_window):
             messagebox.showerror("Calculation error", str(e))
             return
 
+        seg_summary = f"  segments={len(segments_list)}" if segments_list else ""
         info_text = (
             f"impulse_index={data['impulse_index']}  "
             f"peak_index={data['peak_index']}  "
@@ -1011,6 +1229,7 @@ def Impedance_Wave(root, close_impedance_window):
             f"t0={data['t0']:.4e}s  "
             f"Voffset={data['voltage_offset']:.5f}V  "
             f"Vi={data['incident_voltage']:.5f}V"
+            f"{seg_summary}"
         )
         info_var.set(info_text)
         print(info_text)
