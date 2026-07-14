@@ -32,7 +32,7 @@ def Impedance_Wave(root, close_impedance_window):
     csv_path = tk.StringVar()
     z0_var = tk.StringVar(value="50")
     param_type_var = tk.StringVar(value="VF")  # "VF" lub "ER"
-    param_value_var = tk.StringVar(value="0.85")  # domyślna wartość dla VF
+    param_value_var = tk.StringVar(value="")
 
     tk.Label(csv_frame, text="CSV file:").pack(side=tk.LEFT)
 
@@ -63,10 +63,7 @@ def Impedance_Wave(root, close_impedance_window):
     tk.Label(settings_frame, text="Parameter:").pack(side=tk.LEFT, padx=(12, 4))
 
     def on_param_type_change(event=None):
-        if param_type_var.get() == "VF":
-            param_value_var.set("0.85")
-        else:  # ER
-            param_value_var.set("4.3")
+        param_value_var.set("")
 
     param_combo = ttk.Combobox(
         settings_frame,
