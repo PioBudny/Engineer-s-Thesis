@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+# from tkinter import ttk
 import serial
 import serial.tools.list_ports
 import time
@@ -81,9 +81,10 @@ def read_serial():
     global ser
     if ser and ser.is_open:
         try:
-            line = ser.readline().decode(errors='ignore').strip()
-            if line:
-                add_log(line)
+            if ser.in_waiting:
+                line = ser.readline()
+                if line:
+                    add_log(line.decode(errors='ignore').strip())
         except Exception:
             disconnect()
             root.after(2000, try_reconnect)
@@ -118,11 +119,12 @@ def connect():
         return
 
     try:
-        ser = serial.Serial(port, 115200, timeout=1)
-        time.sleep(2)
+        ser = serial.Serial(port, 115200, timeout=0.1)
+        ser.reset_input_buffer()
 
         # Wyślij ping i sprawdź odpowiedź
         ser.write(b"PING\n")
+        root.update_idletasks()
         response = ser.readline().decode(errors='ignore').strip()
         if response != "PONG":
             add_log(f"Handshake failed (got: '{response}')")
@@ -134,7 +136,6 @@ def connect():
         current_port = port
         status_label.itemconfig("led", fill="green")
         add_log("Connected to " + port)
-        open_log_window()
         start_serial_reader()
 
     except Exception as e:
@@ -168,45 +169,39 @@ def stop_impulse():
     else:
         add_log("Not connected to Pico")
 
-def load_configuration():
+# def load_configuration():
 
-    if not (ser and ser.is_open):
-        add_log("Not connected to Pico")
-        return
+#     if not (ser and ser.is_open):
+#         add_log("Not connected to Pico")
+#         return
 
-    source_map = {"Crystal": 0, "External": 1, "PLL": 2}
+#     source_map = {"Crystal": 0, "External": 1, "PLL": 2}
 
-    q1_source = source_map[q1_source_var.get()]
-    q2_source = source_map[q2_source_var.get()]
+#     q1_source = source_map[q1_source_var.get()]
+#     q2_source = source_map[q2_source_var.get()]
 
-    q1_freq = q1_selected_frequency
-    q2_freq = q2_selected_frequency
+#     q1_freq = q1_selected_frequency
+#     q2_freq = q2_selected_frequency
     
-    jitter_ant = int(
-    q1_source_var.get() == "External" or
-    q2_source_var.get() == "External"
-)
+#     jitter_ant = int(
+#     q1_source_var.get() == "External" or
+#     q2_source_var.get() == "External"
+# )
 
-    cmd = (
-        f"LOAD_CONFIG,"
-        f"{Output_en},"
-        f"{q1_source},{q2_source},"
-        f"{q1_freq},{q2_freq}\n"
-    )
+    # cmd = (
+    #     f"LOAD_CONFIG,"
+    #     f"{Output_en},"
+    #     f"{q1_source},{q2_source},"
+    #     f"{q1_freq},{q2_freq}\n"
+    # )
 
-    ser.write(cmd.encode())
+    # ser.write(cmd.encode())
 
 def read_regs():
     if not (ser and ser.is_open):
         add_log("Not connected to Pico")
         return
     ser.write(b"READ_REGS\n")
-
-def default_config():
-    if not (ser and ser.is_open):
-        add_log("Not connected to Pico")
-        return
-    ser.write(b"DEFAULT_CONFIG\n")
     
 def Innitial_Config():
     if not (ser and ser.is_open):
@@ -277,7 +272,6 @@ status_label.create_oval(2, 2, 18, 18, fill="red", outline="black", tags="led")
 tk.Button(top_frame, text="Connect",        command=connect).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Open Log",       command=open_log_window).pack(side=tk.RIGHT, padx=5)
 #tk.Button(top_frame, text="Read Registers", command=read_regs).pack(side=tk.RIGHT, padx=5)
-#tk.Button(top_frame, text="GPIO_Control", command=default_config).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Innitial config", command=Innitial_Config).pack(side=tk.RIGHT, padx=5)
 #tk.Button(top_frame, text="Calibrate PLL", command=Calibrate_PLL).pack(side=tk.RIGHT, padx=5)
 #tk.Button(top_frame, text="Calculator", command=Calculator).pack(side=tk.RIGHT, padx=5)
@@ -285,55 +279,50 @@ tk.Button(top_frame, text="Impedance Wave", command=Impedance_Wave).pack(side=tk
 
 q1_var                = tk.BooleanVar()
 q2_var                = tk.BooleanVar()
-q1_source_var         = tk.StringVar(value="Crystal")
-q2_source_var         = tk.StringVar(value="Crystal")
+# q1_source_var         = tk.StringVar(value="Crystal")
+# q2_source_var         = tk.StringVar(value="Crystal")
 q1_single_impulse_var = tk.BooleanVar()
 q2_single_impulse_var = tk.BooleanVar()
-q1_frequency_var      = tk.StringVar()
-q2_frequency_var      = tk.StringVar()
-q1_selected_frequency = 0
-q2_selected_frequency = 0
+# q1_frequency_var      = tk.StringVar()
+# q2_frequency_var      = tk.StringVar()
+# q1_selected_frequency = 0
+# q2_selected_frequency = 0
 
-
-def get_frequency_options(source):
-    if source == "Crystal":
-        return ["1","4", "10k"]
-    else:  # PLL
-        return ["25", "50", "100", "200"]
-
-
-def update_q1_frequency_options():
-    global q1_selected_frequency
-    options = get_frequency_options(q1_source_var.get())
-    q1_frequency_combo['values'] = options
-    if options:
-        q1_frequency_var.set(options[0])
-        update_q1_selected_frequency()
-
-
-def update_q2_frequency_options():
-    global q2_selected_frequency
-    options = get_frequency_options(q2_source_var.get())
-    q2_frequency_combo['values'] = options
-    if options:
-        q2_frequency_var.set(options[0])
-        update_q2_selected_frequency()
-
-
-def update_q1_selected_frequency():
-    global q1_selected_frequency
-    if q1_frequency_var.get() == "10k":
-        q1_selected_frequency = 10000
-    else:
-        q1_selected_frequency = int(q1_frequency_var.get())
-
-
-def update_q2_selected_frequency():
-    global q2_selected_frequency
-    if q2_frequency_var.get() == "10k":
-        q2_selected_frequency = 10000
-    else:
-        q2_selected_frequency = int(q2_frequency_var.get())
+# def get_frequency_options(source):
+#     if source == "Crystal":
+#         return ["1", "4", "10k"]
+#     else:  # PLL
+#         return ["25", "50", "100", "200"]
+#
+# def update_q1_frequency_options():
+#     global q1_selected_frequency
+#     options = get_frequency_options(q1_source_var.get())
+#     q1_frequency_combo['values'] = options
+#     if options:
+#         q1_frequency_var.set(options[0])
+#         update_q1_selected_frequency()
+#
+# def update_q2_frequency_options():
+#     global q2_selected_frequency
+#     options = get_frequency_options(q2_source_var.get())
+#     q2_frequency_combo['values'] = options
+#     if options:
+#         q2_frequency_var.set(options[0])
+#         update_q2_selected_frequency()
+#
+# def update_q1_selected_frequency():
+#     global q1_selected_frequency
+#     if q1_frequency_var.get() == "10k":
+#         q1_selected_frequency = 10000
+#     else:
+#         q1_selected_frequency = int(q1_frequency_var.get())
+#
+# def update_q2_selected_frequency():
+#     global q2_selected_frequency
+#     if q2_frequency_var.get() == "10k":
+#         q2_selected_frequency = 10000
+#     else:
+#         q2_selected_frequency = int(q2_frequency_var.get())
 
 
 def update_output():
@@ -357,22 +346,23 @@ q1_config_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
 
 tk.Label(q1_config_frame, text="Q1 Configuration", font=("Arial", 10, "bold")).pack(pady=5)
 
-q1_source_frame = tk.Frame(q1_config_frame)
-q1_source_frame.pack(fill=tk.X, padx=5, pady=5)
-tk.Label(q1_source_frame, text="Source:").pack(side=tk.LEFT, padx=5)
-tk.Radiobutton(q1_source_frame, text="Crystal",  variable=q1_source_var, value="Crystal",  command=update_q1_frequency_options).pack(side=tk.LEFT, padx=5)
-tk.Radiobutton(q1_source_frame, text="PLL",      variable=q1_source_var, value="PLL",      command=update_q1_frequency_options).pack(side=tk.LEFT, padx=5)
-
-q1_freq_frame = tk.Frame(q1_config_frame)
-q1_freq_frame.pack(fill=tk.X, padx=5, pady=5)
-tk.Label(q1_freq_frame, text="Frequency (MHz):").pack(side=tk.LEFT, padx=5)
-q1_frequency_combo = ttk.Combobox(q1_freq_frame, textvariable=q1_frequency_var,
-                                   values=get_frequency_options("Crystal"),
-                                   state='readonly', width=10)
-q1_frequency_combo.pack(side=tk.LEFT, padx=5)
-q1_frequency_combo.bind('<<ComboboxSelected>>', lambda e: update_q1_selected_frequency())
-q1_frequency_var.set(get_frequency_options("Crystal")[0])
-update_q1_selected_frequency()
+# Source and frequency selection removed.
+# q1_source_frame = tk.Frame(q1_config_frame)
+# q1_source_frame.pack(fill=tk.X, padx=5, pady=5)
+# tk.Label(q1_source_frame, text="Source:").pack(side=tk.LEFT, padx=5)
+# tk.Radiobutton(q1_source_frame, text="Crystal", variable=q1_source_var, value="Crystal", command=update_q1_frequency_options).pack(side=tk.LEFT, padx=5)
+# tk.Radiobutton(q1_source_frame, text="PLL", variable=q1_source_var, value="PLL", command=update_q1_frequency_options).pack(side=tk.LEFT, padx=5)
+#
+# q1_freq_frame = tk.Frame(q1_config_frame)
+# q1_freq_frame.pack(fill=tk.X, padx=5, pady=5)
+# tk.Label(q1_freq_frame, text="Frequency (MHz):").pack(side=tk.LEFT, padx=5)
+# q1_frequency_combo = ttk.Combobox(q1_freq_frame, textvariable=q1_frequency_var,
+#                                    values=get_frequency_options("Crystal"),
+#                                    state='readonly', width=10)
+# q1_frequency_combo.pack(side=tk.LEFT, padx=5)
+# q1_frequency_combo.bind('<<ComboboxSelected>>', lambda e: update_q1_selected_frequency())
+# q1_frequency_var.set(get_frequency_options("Crystal")[0])
+# update_q1_selected_frequency()
 
 q1_impulse_frame = tk.Frame(q1_config_frame)
 q1_impulse_frame.pack(fill=tk.X, padx=5, pady=5)
@@ -385,22 +375,23 @@ q2_config_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
 
 tk.Label(q2_config_frame, text="Q2 Configuration", font=("Arial", 10, "bold")).pack(pady=5)
 
-q2_source_frame = tk.Frame(q2_config_frame)
-q2_source_frame.pack(fill=tk.X, padx=5, pady=5)
-tk.Label(q2_source_frame, text="Source:").pack(side=tk.LEFT, padx=5)
-tk.Radiobutton(q2_source_frame, text="Crystal",  variable=q2_source_var, value="Crystal",  command=update_q2_frequency_options).pack(side=tk.LEFT, padx=5)
-tk.Radiobutton(q2_source_frame, text="PLL",      variable=q2_source_var, value="PLL",      command=update_q2_frequency_options).pack(side=tk.LEFT, padx=5)
-
-q2_freq_frame = tk.Frame(q2_config_frame)
-q2_freq_frame.pack(fill=tk.X, padx=10, pady=5)
-tk.Label(q2_freq_frame, text="Frequency (MHz):").pack(side=tk.LEFT, padx=5)
-q2_frequency_combo = ttk.Combobox(q2_freq_frame, textvariable=q2_frequency_var,
-                                   values=get_frequency_options("Crystal"),
-                                   state='readonly', width=10)
-q2_frequency_combo.pack(side=tk.LEFT, padx=5)
-q2_frequency_combo.bind('<<ComboboxSelected>>', lambda e: update_q2_selected_frequency())
-q2_frequency_var.set(get_frequency_options("Crystal")[0])
-update_q2_selected_frequency()
+# Source and frequency selection removed.
+# q2_source_frame = tk.Frame(q2_config_frame)
+# q2_source_frame.pack(fill=tk.X, padx=5, pady=5)
+# tk.Label(q2_source_frame, text="Source:").pack(side=tk.LEFT, padx=5)
+# tk.Radiobutton(q2_source_frame, text="Crystal", variable=q2_source_var, value="Crystal", command=update_q2_frequency_options).pack(side=tk.LEFT, padx=5)
+# tk.Radiobutton(q2_source_frame, text="PLL", variable=q2_source_var, value="PLL", command=update_q2_frequency_options).pack(side=tk.LEFT, padx=5)
+#
+# q2_freq_frame = tk.Frame(q2_config_frame)
+# q2_freq_frame.pack(fill=tk.X, padx=10, pady=5)
+# tk.Label(q2_freq_frame, text="Frequency (MHz):").pack(side=tk.LEFT, padx=5)
+# q2_frequency_combo = ttk.Combobox(q2_freq_frame, textvariable=q2_frequency_var,
+#                                    values=get_frequency_options("Crystal"),
+#                                    state='readonly', width=10)
+# q2_frequency_combo.pack(side=tk.LEFT, padx=5)
+# q2_frequency_combo.bind('<<ComboboxSelected>>', lambda e: update_q2_selected_frequency())
+# q2_frequency_var.set(get_frequency_options("Crystal")[0])
+# update_q2_selected_frequency()
 
 q2_impulse_frame = tk.Frame(q2_config_frame)
 q2_impulse_frame.pack(fill=tk.X, padx=5, pady=5)
@@ -411,7 +402,7 @@ tk.Checkbutton(q2_impulse_frame, text="Enable Q2",      variable=q2_var, command
 buttons_frame = tk.Frame(root)
 buttons_frame.pack(fill=tk.X, padx=10, pady=10)
 
-tk.Button(buttons_frame, text="Load Configuration", command=load_configuration, width=15).pack(pady=5)
+# tk.Button(buttons_frame, text="Load Configuration", command=load_configuration, width=15).pack(pady=5)
 tk.Button(buttons_frame, text="Send impulse",        command=send_impulse,       width=15).pack(pady=5)
 tk.Button(buttons_frame, text="Stop",                command=stop_impulse,       width=15).pack(pady=5)
 
