@@ -505,12 +505,11 @@ def Impedance_Wave(root, close_impedance_window):
         )
 
         if reflection_start_index is not None:
-            reflection_peak_index, reflection_end_index = find_pulse_peak_and_end(
+            reflection_peak_index, _ = find_pulse_peak_and_end(
                 corrected_voltages, reflection_start_index, noise_threshold
             )
-            # Mały margines, żeby nie uciąć w połowie opadającego zbocza
-            margin_samples = max(3, int(len(corrected_voltages) * 0.005))
-            plot_end_index = min(reflection_end_index + margin_samples, len(corrected_voltages) - 1)
+            # Przycinaj wykres dokładnie na szczycie odbicia, bez dodatkowego marginesu
+            plot_end_index = min(reflection_peak_index, len(corrected_voltages) - 1)
         else:
             # Nie znaleziono żadnego odbicia powyżej progu szumu - pokaż wszystko, co jest
             reflection_peak_index = calculation_start

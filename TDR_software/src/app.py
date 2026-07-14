@@ -160,6 +160,7 @@ def send_impulse():
     cmd = f"IMPULSE_START,{Output_en},{q1_single},{q2_single}\n"
     ser.write(cmd.encode())
 
+
 def stop_impulse():
     if ser and ser.is_open:
         ser.write(b"IMPULSE_STOP\n")
@@ -275,7 +276,7 @@ status_label.create_oval(2, 2, 18, 18, fill="red", outline="black", tags="led")
 
 tk.Button(top_frame, text="Connect",        command=connect).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Open Log",       command=open_log_window).pack(side=tk.RIGHT, padx=5)
-tk.Button(top_frame, text="Read Registers", command=read_regs).pack(side=tk.RIGHT, padx=5)
+#tk.Button(top_frame, text="Read Registers", command=read_regs).pack(side=tk.RIGHT, padx=5)
 #tk.Button(top_frame, text="GPIO_Control", command=default_config).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Innitial config", command=Innitial_Config).pack(side=tk.RIGHT, padx=5)
 #tk.Button(top_frame, text="Calibrate PLL", command=Calibrate_PLL).pack(side=tk.RIGHT, padx=5)
