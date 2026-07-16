@@ -1,0 +1,3 @@
+.uf2 file ----Uncomment button "Packeging" in pico_control.py
+
+py -m PyInstaller --onefile --windowed TDR_app.py  ---- Windows and linux 

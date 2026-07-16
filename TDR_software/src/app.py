@@ -1,10 +1,22 @@
+import sys
+from pathlib import Path
 import tkinter as tk
 # from tkinter import ttk
 import serial
 import serial.tools.list_ports
 import time
 from Impedance_wave import Impedance_Wave as _Impedance_Wave
-from Calculator import Calculator as _Calculator
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+from pico_control import (
+    open_pico_control_window as open_pico_control_window_module,
+    close_pico_control_window as close_pico_control_window_module,
+)
+
+APP_NAME = "TDR Control Software"
+APP_VERSION = "1.0"
+APP_PCB_COMPAT = "TDR 3.0"
+APP_SOURCE_URL = "https://github.com/<placeholder>/TDR_software"
+APP_AUTHOR = "Piotr Budny"
 
 ser = None
 current_port = None
@@ -14,7 +26,7 @@ serial_reader_started = False
 Output_en = 0
 Selected_Frequency = 0
 impedance_window = None
-calculator_window = None
+info_window = None
 
 # ===== SERIAL =====
 
@@ -23,7 +35,6 @@ def find_pico():
     for port in ports:
         desc = port.description.lower()
         hwid = port.hwid.lower()
-        # Raspberry Pi Pico ma VID=2E8A
         if "2e8a" in hwid or "pico" in desc or "raspberry" in desc:
             return port.device
     return None
@@ -92,7 +103,7 @@ def read_serial():
     root.after(100, read_serial)
 
 def try_reconnect():
-    if ser and ser.is_open:  # już połączony, nie rób nic
+    if ser and ser.is_open: 
         return
     port = find_pico()
     if port:
@@ -122,7 +133,6 @@ def connect():
         ser = serial.Serial(port, 115200, timeout=0.1)
         ser.reset_input_buffer()
 
-        # Wyślij ping i sprawdź odpowiedź
         ser.write(b"PING\n")
         root.update_idletasks()
         response = ser.readline().decode(errors='ignore').strip()
@@ -232,21 +242,118 @@ def Impedance_Wave():
     impedance_window = _Impedance_Wave(root, close_impedance_window)
     
 # ===== CALCULATOR WINDOW =====
- 
-def close_calculator_window():
-    global calculator_window
-    if calculator_window:
-        calculator_window.destroy()
-        calculator_window = None
- 
-def Calculator():
-    global calculator_window
-    if calculator_window and tk.Toplevel.winfo_exists(calculator_window):
-        calculator_window.lift()
-        return
-    calculator_window = _Calculator(root, close_calculator_window)
 
-    
+# ===== PICO CONTROL WINDOW =====
+
+def open_pico_control_window():
+    open_pico_control_window_module(root, add_log)
+
+
+def close_pico_control_window():
+    close_pico_control_window_module()
+
+# ===== INFO WINDOW =====
+
+def close_info_window():
+    global info_window
+    if info_window:
+        info_window.destroy()
+        info_window = None
+
+
+def open_info_window():
+    global info_window
+    if info_window and tk.Toplevel.winfo_exists(info_window):
+        info_window.lift()
+        return
+
+    info_window = tk.Toplevel(root)
+    info_window.title("Info")
+    info_window.geometry("650x500")
+
+    main_frame = tk.Frame(info_window, padx=15, pady=15)
+    main_frame.pack(fill=tk.BOTH, expand=True)
+
+    info_frame = tk.LabelFrame(main_frame, text="Info", padx=10, pady=10)
+    info_frame.pack(fill=tk.X, pady=(0, 10))
+
+    tk.Label(
+        info_frame,
+        text=f"{APP_NAME} v{APP_VERSION}",
+        font=("Arial", 10, "bold"),
+        anchor="w",
+        justify=tk.LEFT,
+    ).pack(fill=tk.X)
+    tk.Label(
+        info_frame, text=f"Compatible with PCB: {APP_PCB_COMPAT}", anchor="w", justify=tk.LEFT
+    ).pack(fill=tk.X, pady=(4, 0))
+    tk.Label(
+        info_frame,
+        text=f"Source code: {APP_SOURCE_URL}",
+        anchor="w",
+        justify=tk.LEFT,
+        wraplength=380,
+    ).pack(fill=tk.X, pady=(4, 0))
+    tk.Label(info_frame, text=f"Author: {APP_AUTHOR}", anchor="w", justify=tk.LEFT).pack(
+        fill=tk.X, pady=(4, 0)
+    )
+
+    manual_frame = tk.LabelFrame(main_frame, text="User Manual", padx=10, pady=10)
+    manual_frame.pack(fill=tk.BOTH, expand=True)
+
+    manual_text_frame = tk.Frame(manual_frame)
+    manual_text_frame.pack(fill=tk.BOTH, expand=True)
+
+    manual_scrollbar = tk.Scrollbar(manual_text_frame)
+    manual_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+    manual_text = tk.Text(manual_text_frame, wrap=tk.WORD, height=14)
+    manual_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+    manual_text.config(yscrollcommand=manual_scrollbar.set)
+    manual_scrollbar.config(command=manual_text.yview)
+
+    manual_content = (
+        "Connect - establishes a serial connection with the Raspberry Pi Pico.\n\n"
+
+        "Pico Control - opens the firmware build and programming window:\n"
+        "  • Manual mode - copies the .uf2 file to the selected RPI-RP2 drive\n"
+        "    using 'Program Pico'. The Pico must be in BOOTSEL mode and the\n"
+        "    drive must be selected manually.\n"
+        "  • Picotool mode - programs the Pico using the picotool utility.\n"
+        "    The device is detected automatically over USB.\n"
+        "    BOOTSEL mode is not required, but picotool must be installed.\n\n"
+
+        "Open Log - opens a window containing the complete communication log.\n\n"
+
+        "Initial Config - sends the default NLG9881 configuration to the Pico.\n\n"
+
+        "Impedance Wave - opens the TDR impedance calculation and plotting window.\n\n"
+
+        "  • Browse - opens a file dialog to select a .csv file containing\n"
+        "    TDR measurement data.\n"
+        "  • Load - loads the selected .csv file and displays the waveform.\n"
+        "  • Calculate - calculates the impedance profile from the loaded\n"
+        "    TDR measurement.\n"
+        "  • Z0 - sets the reference characteristic impedance used for the\n"
+        "    calculation.\n"
+        "  • Vf / Er - specifies either the velocity factor (Vf) or the\n"
+        "    relative permittivity (Er) and its value for the calculation.\n"
+        "  • Segments with Different Vf or Er - allows different cable\n"
+        "    sections to be defined with individual velocity factors or\n"
+        "    relative permittivity values.\n\n"
+
+        "Send Impulse - generates a pulse on the selected outputs (Q1/Q2).\n\n"
+        "  • Single Impulse - when enabled, only a single pulse is generated\n"
+        "    on the selected outputs.\n"
+        "  • Enable Q1/Q2 - selects which outputs will generate the pulse.\n\n"
+
+        "Stop - stops pulse generation on all outputs."
+    )
+    manual_text.insert(tk.END, manual_content)
+    manual_text.config(state=tk.DISABLED)
+
+    info_window.protocol("WM_DELETE_WINDOW", close_info_window)
+
 # ===== LOG =====
 
 def add_log(message):
@@ -259,7 +366,7 @@ def add_log(message):
 
 root = tk.Tk()
 root.title("TDR App")
-root.geometry("500x450")
+root.geometry("600x400")
 
 # Top frame
 top_frame = tk.Frame(root)
@@ -270,7 +377,9 @@ status_label.pack(side=tk.RIGHT, padx=5)
 status_label.create_oval(2, 2, 18, 18, fill="red", outline="black", tags="led")
 
 tk.Button(top_frame, text="Connect",        command=connect).pack(side=tk.RIGHT, padx=5)
+tk.Button(top_frame, text="Pico control", command=open_pico_control_window).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Open Log",       command=open_log_window).pack(side=tk.RIGHT, padx=5)
+tk.Button(top_frame, text="Info",           command=open_info_window).pack(side=tk.RIGHT, padx=5)
 #tk.Button(top_frame, text="Read Registers", command=read_regs).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Innitial config", command=Innitial_Config).pack(side=tk.RIGHT, padx=5)
 #tk.Button(top_frame, text="Calibrate PLL", command=Calibrate_PLL).pack(side=tk.RIGHT, padx=5)

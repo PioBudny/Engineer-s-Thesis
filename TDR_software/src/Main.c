@@ -27,7 +27,7 @@ void cfg_add(uint16_t reg, uint8_t value)
     {
         if (cfg[i].reg == reg)
         {
-            cfg[i].value |= value; // scalanie przez OR — nie kasuje żadnych bitów
+            cfg[i].value |= value;
             return;
         }
     }
@@ -103,13 +103,12 @@ int main()
 
     innit();
 
-    // Inicjalizacja urządzenia NLG9881
+    //inicialization of NLG9881 and I2C
 
     char buffer[64];
     int buffer_index = 0;
 
     while (true) {
-        // Non-blocking odczyt znaku
         int ch = getchar_timeout_us(0);
         
         if (ch != PICO_ERROR_TIMEOUT) {
@@ -117,18 +116,18 @@ int main()
                 buffer[buffer_index] = 0;
                 buffer_index = 0;
                 
-                // Przetworzenie komendy
+
                 CommandType command = parse_command(buffer);
 
                 switch (command) {
 
-                    case CMD_READ_REGS: { // Wypisywanie wszystkich rejestrów NLG
+                    case CMD_READ_REGS: {
                         dump_all_regs(I2C_PORT);
                         printf("OK\n");
                         break;
                     }
 
-                    case CMD_Innital_Config: { // Wypisywanie wszystkich rejestrów NLG
+                    case CMD_Innital_Config: {
                         load_tab(I2C_PORT, Constant_values, Constant_values_count);
                         printf("OK\n");
                         break;
@@ -311,7 +310,7 @@ int main()
                         break;
                 }
 
-                    case CMD_IMPULSE_STOP: { //Wyłącznie wyjść
+                    case CMD_IMPULSE_STOP: {
                         reg = 0x00;
                         i2c_write_reg16(I2C_PORT, DEVICE_ADDR, 0x39, &reg, 1);
                         gpio_put(2, 1);

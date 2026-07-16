@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 
-// Uruchomienie I2C i konfiguracja pinów
 void i2c_device_init(i2c_inst_t *i2c, uint sda, uint scl) {
     i2c_init(i2c, 400 * 1000);
     gpio_set_function(sda, GPIO_FUNC_I2C);
@@ -16,7 +15,6 @@ void i2c_device_init(i2c_inst_t *i2c, uint sda, uint scl) {
 }
 
 
-// zapis do rejestru 16-bit
 bool i2c_write_reg16(i2c_inst_t *i2c, uint8_t addr, uint16_t reg, uint8_t *data, size_t len) {
     uint8_t buffer[258];
 
@@ -31,7 +29,7 @@ bool i2c_write_reg16(i2c_inst_t *i2c, uint8_t addr, uint16_t reg, uint8_t *data,
     return (ret >= 0);
 }
 
-// odczyt z rejestru 16-bit
+
 bool i2c_read_reg16(i2c_inst_t *i2c, uint8_t addr, uint16_t reg, uint8_t *data, size_t len) {
     uint8_t reg_buf[2];
 
@@ -320,7 +318,6 @@ void Flag_Clear(i2c_inst_t *i2c)
     i2c_write_reg16(i2c, DEVICE_ADDR, REG_INT_STATUS_0, &clr, 1);
 }
 
-//Wypisuje wszystkie rejestry
 void dump_all_regs(i2c_inst_t *i2c)
 {
     uint8_t data;

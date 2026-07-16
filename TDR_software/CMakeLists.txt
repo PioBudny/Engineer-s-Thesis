@@ -35,9 +35,8 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
  
-add_executable(TDR_software 
+add_executable(TDR_software
     src/Main.c
-    src/app.py
     src/NLG/NLG9881.c
 )
 

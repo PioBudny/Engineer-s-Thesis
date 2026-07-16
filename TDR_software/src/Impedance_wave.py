@@ -31,7 +31,7 @@ def Impedance_Wave(root, close_impedance_window):
 
     csv_path = tk.StringVar()
     z0_var = tk.StringVar(value="50")
-    param_type_var = tk.StringVar(value="VF")  # "VF" lub "ER"
+    param_type_var = tk.StringVar(value="VF")
     param_value_var = tk.StringVar(value="")
 
     tk.Label(csv_frame, text="CSV file:").pack(side=tk.LEFT)
@@ -59,7 +59,6 @@ def Impedance_Wave(root, close_impedance_window):
     tk.Label(settings_frame, text="Z0 (Ohm):").pack(side=tk.LEFT)
     tk.Entry(settings_frame, textvariable=z0_var, width=8).pack(side=tk.LEFT, padx=(4, 12))
 
-    # Wybór między ER a VF z listy
     tk.Label(settings_frame, text="Parameter:").pack(side=tk.LEFT, padx=(12, 4))
 
     def on_param_type_change(event=None):
@@ -87,16 +86,46 @@ def Impedance_Wave(root, close_impedance_window):
         justify=tk.LEFT,
         wraplength=520
     ).pack(side=tk.LEFT, fill=tk.X, expand=True)
+    
+    
+    # ────────────────────────────────────────────────────────────────
+    # Vf/ER conversion
+    # ────────────────────────────────────────────────────────────────
+    def param_to_vf(param_type, value):
+        if param_type == "VF":
+            vf = value
+            if vf > 1:
+                vf /= 100
+            if not (0 < vf <= 1):
+                raise ValueError("VF must be between 0 and 1, or percent value like 66.")
+            return vf
+        else:  # ER
+            er = value
+            if er <= 1:
+                raise ValueError("ER must be greater than 1.")
+            return 1.0 / (er ** 0.5)
+        
+        
+    # ────────────────────────────────────────────────────────────────
+    # How To Use
+    # ────────────────────────────────────────────────────────────────
+    
+    howto_text = (
+        "How to use: 1) Browse and select a .csv file  →  2) Load .csv  →  "
+        "3) set Z0 and VF/ER (add segments on the right if the cable has "
+        "different sections)  →  4) Calculate Z(d)."
+    )
+    tk.Label(
+        impedance_window,
+        text=howto_text,
+        anchor="w",
+        justify=tk.LEFT,
+        fg="gray",
+        wraplength=1080
+    ).pack(fill=tk.X, padx=10, pady=(0, 8))
 
-    # ────────────────────────────────────────────────────────────────
-    # Info o obliczeniach jest ukryta z interfejsu
-    # ────────────────────────────────────────────────────────────────
 
     info_var = tk.StringVar(value="")
-
-    # ────────────────────────────────────────────────────────────────
-    # Wykres
-    # ────────────────────────────────────────────────────────────────
 
     content_frame = tk.Frame(impedance_window)
     content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
@@ -120,15 +149,10 @@ def Impedance_Wave(root, close_impedance_window):
     math_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=(10, 0))
     math_frame.pack_propagate(False)
 
-    # ────────────────────────────────────────────────────────────────
-    # Tabela segmentów VF/ER (rozne osrodki wzdluz DUT)
-    #
-    # Kazdy wiersz nadpisuje globalne VF/ER tylko w podanym zakresie
-    # odleglosci [start, end) (w metrach). Zakresy nieobjete zadnym
-    # segmentem (w tym wszystko powyzej najdalszego segmentu) nadal
-    # licza sie globalnym VF/ER z gornego paska ustawien.
-    # ────────────────────────────────────────────────────────────────
 
+    # ────────────────────────────────────────────────────────────────
+    # Segments with different VF/ER
+    # ────────────────────────────────────────────────────────────────
     tk.Label(
         math_frame,
         text="Segments with different Vf/ER",
@@ -183,24 +207,13 @@ def Impedance_Wave(root, close_impedance_window):
     seg_buttons_frame = tk.Frame(math_frame)
     seg_buttons_frame.pack(fill=tk.X, pady=(0, 8))
 
-    def param_to_vf(param_type, value):
-        """Waliduje i przelicza pojedyncza wartosc VF/ER na VF. Rzuca
-        ValueError z czytelnym komunikatem, jesli wartosc jest niepoprawna.
-        Wspolna logika, uzywana zarowno dla ustawien globalnych, jak i dla
-        kazdego segmentu w tabeli."""
-        if param_type == "VF":
-            vf = value
-            if vf > 1:
-                vf /= 100
-            if not (0 < vf <= 1):
-                raise ValueError("VF must be between 0 and 1, or percent value like 66.")
-            return vf
-        else:  # ER
-            er = value
-            if er <= 1:
-                raise ValueError("ER must be greater than 1.")
-            return 1.0 / (er ** 0.5)
 
+
+        
+    # ────────────────────────────────────────────────────────────────
+    # Segments logistics
+    # ────────────────────────────────────────────────────────────────
+    
     def refresh_segments_tree():
         segments_tree.delete(*segments_tree.get_children())
         for i, seg in enumerate(sorted(segments_list, key=lambda s: s["start"])):
@@ -282,7 +295,11 @@ def Impedance_Wave(root, close_impedance_window):
     tk.Button(seg_buttons_frame, text="Add", width=7, command=on_add_segment).pack(side=tk.LEFT, padx=(0, 4))
     tk.Button(seg_buttons_frame, text="Remove", width=7, command=on_remove_segment).pack(side=tk.LEFT, padx=(0, 4))
     tk.Button(seg_buttons_frame, text="Clear", width=7, command=on_clear_segments).pack(side=tk.LEFT)
-
+    
+    # ────────────────────────────────────────────────────────────────
+    # Charts
+    # ────────────────────────────────────────────────────────────────
+    
     raw_data = {
         "x_values": [],
         "y_values": [],
@@ -302,7 +319,7 @@ def Impedance_Wave(root, close_impedance_window):
         "y_values": [],
         "x_label": "Distance (m)",
         "y_label": "Impedance (Ohm)",
-        "title": "Charakterystyka impedancji od odleglosci",
+        "title": "Impedance Profile",
         "x_min": None,
         "x_max": None,
         "y_min": None,
@@ -382,10 +399,6 @@ def Impedance_Wave(root, close_impedance_window):
 
         update_chart_bounds(chart_data, x_values, y_values, reference_line, reset_bounds=reset_bounds)
 
-        # WAŻNE: update_idletasks() musi być PRZED delete("all"). Wywołane po
-        # czyszczeniu wymuszało natychmiastowe odrysowanie pustego (białego)
-        # canvasu na ekranie, zanim dorysowana została nowa zawartość - stąd
-        # widoczne "miganie" na biało przy każdym przerysowaniu.
         canvas.update_idletasks()
         canvas.delete("all")
 
@@ -429,16 +442,9 @@ def Impedance_Wave(root, close_impedance_window):
 
             return f"{value:.2f}"
 
-        # ── 1) Zawartość danych (linia pomiarowa, linia referencyjna) ──
-        # Tag "content". Rysowana jako pierwsza (najniżej), dzięki czemu
-        # fragmenty, które przy zoomie/panie wystają poza obszar wykresu,
-        # zostaną w kolejnym kroku przykryte białymi maskami.
+
         if reference_line is not None:
             ref_y = ty(reference_line)
-            # Tag "refline" (a nie "content"): to pozioma linia o stałej
-            # szerokości (od pad_l do W-pad_r), więc przy przeciąganiu wykresu
-            # wolno ją przesuwać tylko w pionie (zmiana wartości Y), nigdy w
-            # poziomie - inaczej "ucieka" w bok i część wykresu zostaje bez niej.
             canvas.create_line(
                 pad_l,
                 ref_y,
@@ -461,18 +467,9 @@ def Impedance_Wave(root, close_impedance_window):
                 tags="refline"
             )
 
-        # Aby wykres pozostal plynny nawet przy duzym przyblizeniu, rysujemy
-        # tylko probki z aktualnie widocznego zakresu X (+ jedna probka
-        # zapasu z kazdej strony, zeby linia byla ciagla na krawedzi), a nie
-        # zawsze caly zbior danych. Zaklada rosnaco posortowane x_values
-        # (tak sa tu zawsze wczytywane/liczone - czas albo odleglosc).
+
         if x_values:
             x_range = (max_x - min_x) or 1.0
-            # Bufor: dodatkowa "szerokosc ekranu" danych z kazdej strony.
-            # Dzieki temu podczas plynnego przeciagania (canvas.move) brzeg,
-            # ktory dopiero wjezdza w kadr, jest juz narysowany, zanim
-            # zdazy sie pelne przerysowanie (throttled) - inaczej widac
-            # pusty/bialy pasek do momentu odswiezenia.
             margin = x_range
             start_idx = bisect.bisect_left(x_values, min_x - margin)
             end_idx = bisect.bisect_right(x_values, max_x + margin)
@@ -506,17 +503,11 @@ def Impedance_Wave(root, close_impedance_window):
                 tags="content"
             )
 
-        # ── 2) Maski (białe prostokąty poza obszarem wykresu) ──
-        # Tag "mask". Zakrywają wszystko, co narysowane w kroku 1, a leży
-        # poza prostokątem [pad_l, W-pad_r] x [pad_t, H-pad_b].
         canvas.create_rectangle(0, 0, W, pad_t, fill="white", outline="", tags="mask")
         canvas.create_rectangle(0, H - pad_b, W, H, fill="white", outline="", tags="mask")
         canvas.create_rectangle(0, 0, pad_l, H, fill="white", outline="", tags="mask")
         canvas.create_rectangle(W - pad_r, 0, W, H, fill="white", outline="", tags="mask")
 
-        # ── 3) Osie, siatka, opisy, tytuł ──
-        # Tag "chrome". Rysowane na samej górze, więc zawsze widoczne
-        # ponad maskami.
         canvas.create_text(
             W // 2,
             14,
@@ -612,8 +603,7 @@ def Impedance_Wave(root, close_impedance_window):
             )
 
     def redraw_from_state(canvas, chart_data, empty_text=""):
-        """Przerysowuje wykres na podstawie danych już zapisanych w chart_data
-        (bez konieczności ponownego przekazywania x/y/tytułu itd.)."""
+
         draw_chart(
             canvas,
             chart_data,
@@ -628,11 +618,6 @@ def Impedance_Wave(root, close_impedance_window):
         )
 
     def schedule_redraw(canvas, chart_data, delay=30):
-        """Odkłada pełne przerysowanie (z przeliczeniem siatki/osi) o kilka
-        milisekund i anuluje poprzednio zaplanowane odświeżenie. Dzięki temu
-        przy szybkich zdarzeniach (scroll kółkiem, przeciąganie) nie robimy
-        pełnego canvas.delete('all') + redraw za każdym pojedynczym zdarzeniem,
-        co wcześniej powodowało miganie na biało i spadki płynności."""
         job = chart_data.get("redraw_job")
         if job is not None:
             canvas.after_cancel(job)
@@ -644,15 +629,10 @@ def Impedance_Wave(root, close_impedance_window):
         chart_data["redraw_job"] = canvas.after(delay, _do_redraw)
 
     def show_point_at_pixel(canvas, chart_data, px, py):
-        """Znajduje najblizszy punkt danych do klikniecia (px, py w pikselach
-        canvasa) i rysuje przy nim znacznik ze wspolrzednymi (np. Distance /
-        Impedance albo Time / Voltage - w zaleznosci od wykresu)."""
         W = canvas.winfo_width()
         H = canvas.winfo_height()
         pad_l, pad_r, pad_t, pad_b = PLOT_PAD_L, PLOT_PAD_R, PLOT_PAD_T, PLOT_PAD_B
 
-        # Klikniecie poza samym obszarem wykresu (np. na opisie osi) - nic
-        # nie pokazujemy.
         if not (pad_l <= px <= W - pad_r and pad_t <= py <= H - pad_b):
             return
 
@@ -794,15 +774,8 @@ def Impedance_Wave(root, close_impedance_window):
 
         chart_data["pan_start"] = (event.x, event.y)
 
-        # Natychmiastowa, płynna informacja zwrotna: przesuwamy tylko
-        # elementy z tagiem "content" (linię danych, linię referencyjną),
-        # zamiast czyścić i przerysowywać cały canvas przy każdym ruchu myszy
-        # — to właśnie robiło "biały" flash przy przeciąganiu.
         canvas.move("content", dx, dy)
         canvas.move("refline", 0, dy)
-
-        # Pełne, dokładne przerysowanie (poprawne skale osi/siatki i
-        # przycięcie do obszaru wykresu) z niewielkim opóźnieniem.
         schedule_redraw(canvas, chart_data, delay=40)
 
     def on_pan_end(event, canvas, chart_data):
@@ -816,9 +789,6 @@ def Impedance_Wave(root, close_impedance_window):
 
         redraw_from_state(canvas, chart_data)
 
-        # Jesli mysz prawie sie nie poruszyla miedzy wcisnieciem a
-        # puszczeniem przycisku, to bylo klikniecie (a nie przeciagniecie) -
-        # pokaz najblizszy punkt danych wraz z jego wspolrzednymi.
         if press_pos is not None:
             moved = abs(event.x - press_pos[0]) + abs(event.y - press_pos[1])
             if moved <= 3:
@@ -860,7 +830,7 @@ def Impedance_Wave(root, close_impedance_window):
 
         signal_name = first_row[1] if len(first_row) > 1 and first_row[1] else "Signal"
         x_label = second_row[0] if second_row and second_row[0] else "Sequence"
-        y_label = second_row[1] if len(second_row) > 1 and second_row[1] else "Value"
+        y_label = "Voltage (V)"
 
         try:
             start_index = first_row.index("Start")
@@ -917,7 +887,7 @@ def Impedance_Wave(root, close_impedance_window):
 
         x_values, y_values, title, x_label, y_label = loaded
 
-        # Przelicz czas z sekund na nanosekundy (tylko dla wyświetlania surowych danych)
+        # s -> ns conversion for time axis if applicable
         if x_label == "Time (s)":
             x_values = [x * 1e9 for x in x_values]
             x_label = "Time (ns)"
@@ -935,30 +905,10 @@ def Impedance_Wave(root, close_impedance_window):
         )
 
     def build_time_to_distance_converter(segments, default_vf, c):
-        """Buduje funkcje przeliczajaca ROUND-TRIP czas (t - t0) na odleglosc,
-        uwzgledniajac rozne VF w roznych zakresach odleglosci (segmenty).
-
-        Segmenty NIE moga sie nakladac (zapewnia to walidacja przy dodawaniu).
-        Zakresy nieobjete zadnym segmentem (luki miedzy nimi oraz wszystko
-        powyzej ostatniego segmentu) licza sie z 'default_vf'.
-
-        Idea: fala biegnie z lokalna predkoscia c*vf(x) w kazdym punkcie x
-        wzdluz DUT. Czas propagacji w JEDNA strone do punktu x to:
-            t_one_way(x) = integral_0^x [ 1 / (c * vf(x')) ] dx'
-        Poniewaz vf jest stale w kazdym segmencie, ta calka to po prostu
-        suma (dlugosc_segmentu / (c*vf_segmentu)) po wszystkich segmentach
-        przed x, plus czesciowy kawalek w segmencie, w ktorym lezy x.
-
-        Zmierzony (t - t0) to czas w OBIE strony, wiec dzielimy przez 2,
-        zeby dostac t_one_way, a potem szukamy, ktoremu x ono odpowiada
-        (odwrotnosc powyzszej funkcji, ktora jest odcinkowo liniowa i
-        monotoniczna - latwo ja odwrocic segment po segmencie)."""
 
         segs = sorted(segments, key=lambda s: s["start"])
 
-        # Uzupelnij luki (w tym przed pierwszym segmentem) segmentami
-        # o domyslnym VF, zeby cala os odleglosci od 0 byla pokryta w sposob
-        # ciagly az do konca ostatniego zdefiniowanego segmentu.
+
         full_segments = []
         cursor = 0.0
         for seg in segs:
@@ -967,8 +917,6 @@ def Impedance_Wave(root, close_impedance_window):
             full_segments.append({"start": seg["start"], "end": seg["end"], "vf": seg["vf"]})
             cursor = seg["end"]
 
-        # Skumulowany czas propagacji (jedna strona) do poczatku/konca
-        # kazdego segmentu.
         cum_time = 0.0
         segments_with_time = []
         for seg in full_segments:
@@ -994,8 +942,6 @@ def Impedance_Wave(root, close_impedance_window):
                     dt_local = one_way_time - seg["t_start"]
                     return seg["start"] + dt_local * c * seg["vf"]
 
-            # Poza ostatnim zdefiniowanym/domyslnym segmentem - ekstrapoluj
-            # dalej z domyslnym VF.
             last = segments_with_time[-1]
             dt_local = one_way_time - last["t_end"]
             return last["end"] + dt_local * c * default_vf
@@ -1015,11 +961,10 @@ def Impedance_Wave(root, close_impedance_window):
         if z0 <= 0:
             raise ValueError("Z0 must be greater than zero.")
 
-        # Konwersja globalnego ER/VF (uzywana tam, gdzie tabela segmentow
-        # nie definiuje nic innego dla danej odleglosci)
+        # er/Vf global conversion
         vf = param_to_vf(param_type, param_value)
         if param_type == "VF":
-            er = 1.0 / (vf ** 2)  # er = 1 / vf^2 dla non-magnetic materials
+            er = 1.0 / (vf ** 2)  # er = 1 / vf^2
         else:
             er = param_value
 
@@ -1029,19 +974,13 @@ def Impedance_Wave(root, close_impedance_window):
         def average(values):
             return sum(values) / len(values)
 
-        def find_first_above_threshold(values, start_index, threshold):
-            """Zwraca indeks pierwszej próbki (od start_index), której |wartość|
-            przekracza threshold, albo None, jeśli żadna nie przekracza."""
+        def find_first_above_threshold(values, start_index, threshold): #index of first sample above threshold
             for i in range(start_index, len(values)):
                 if abs(values[i]) >= threshold:
                     return i
             return None
 
-        def find_pulse_peak_and_end(values, start_index, noise_threshold):
-            """Od start_index znajduje indeks szczytu (maks. |wartość|),
-            a potem pierwszy indeks po szczycie, gdzie sygnał znów spada
-            poniżej noise_threshold. Używane zarówno dla impulsu wysłanego,
-            jak i dla odbicia - stąd wspólna funkcja."""
+        def find_pulse_peak_and_end(values, start_index, noise_threshold): #index of peak and index of first sample below threshold after peak
             peak_index = start_index + max(
                 range(len(values) - start_index),
                 key=lambda i: abs(values[start_index + i])
@@ -1055,11 +994,7 @@ def Impedance_Wave(root, close_impedance_window):
 
             return peak_index, end_index
 
-        # ── Krok 1: znajdź impulse_index (start impulsu #1 - wysłanego) ──
-        # Jeśli czas przechodzi przez t=0, to jest to najpewniejszy wyznacznik
-        # startu impulsu (moment wyzwolenia oscyloskopu). W przeciwnym razie
-        # dopiero wtedy liczymy prowizoryczny offset/próg na potrzeby detekcji
-        # amplitudowej - nie robimy tego niepotrzebnie za każdym razem.
+        # Find the index of the first sample that is part of the pulse
         def find_impulse_index():
             if min(times) < 0 < max(times):
                 for i, t in enumerate(times):
@@ -1078,8 +1013,7 @@ def Impedance_Wave(root, close_impedance_window):
 
         impulse_index = find_impulse_index()
 
-        # ── Krok 2: właściwy offset, liczony od początku danych
-        # do faktycznie znalezionego początku impulsu ──
+        # removing baseline offset and calculating noise level
         baseline_samples = voltages[:impulse_index] if impulse_index >= 1 else voltages[:max(3, int(len(voltages) * 0.05))]
         voltage_offset = average(baseline_samples)
         corrected_voltages = [v - voltage_offset for v in voltages]
@@ -1088,20 +1022,19 @@ def Impedance_Wave(root, close_impedance_window):
         peak = max(abs(v) for v in corrected_voltages)
         noise_threshold = max(noise_level * 4, peak * 0.02, 1e-12)
 
-        # ── Krok 3: znajdź szczyt i koniec impulsu #1 (wysłanego) ──
         peak_index, pulse_end_index = find_pulse_peak_and_end(
             corrected_voltages, impulse_index, noise_threshold
         )
 
         calculation_start = min(pulse_end_index + 1, len(voltages) - 1)
 
-        # ── Krok 4: napięcie padające (szczyt impulsu #1) ──
+        # find the incident voltage (the peak of the first pulse)
         incident_voltage = corrected_voltages[peak_index]
 
         if abs(incident_voltage) < 1e-12:
             raise ValueError("Incident pulse amplitude is too close to zero.")
 
-        # ── Krok 5: znajdź impuls #2 (odbicie) i miejsce jego zakończenia ──
+        # find the index of the first sample that is part of the reflection pulse
         reflection_start_index = find_first_above_threshold(
             corrected_voltages, calculation_start, noise_threshold
         )
@@ -1110,10 +1043,8 @@ def Impedance_Wave(root, close_impedance_window):
             reflection_peak_index, _ = find_pulse_peak_and_end(
                 corrected_voltages, reflection_start_index, noise_threshold
             )
-            # Przycinaj wykres dokładnie na szczycie odbicia, bez dodatkowego marginesu
             plot_end_index = min(reflection_peak_index, len(corrected_voltages) - 1)
         else:
-            # Nie znaleziono żadnego odbicia powyżej progu szumu - pokaż wszystko, co jest
             reflection_peak_index = calculation_start
             plot_end_index = len(corrected_voltages) - 1
 
@@ -1137,43 +1068,16 @@ def Impedance_Wave(root, close_impedance_window):
 
     def calculate_impedance_vs_distance(data):
 
-        # ── Zmienne potrzebne do obliczeń ──
-        # c                  - prędkość światła w próżni [m/s]
-        # z0                 - impedancja odniesienia (linii/generatora) [Ohm]
-        # vf                 - globalny wspolczynnik skrocenia (velocity
-        #                      factor), uzywany tam gdzie tabela segmentow
-        #                      nie definiuje nic innego dla danej odleglosci
-        # times              - lista czasów próbek [s]
-        # calculation_start  - indeks pierwszej próbki liczonej jako odbicie
-        #                      (czyli tuż po impulsie #1 - wysłanym)
-        # plot_end_index     - indeks końca impulsu #2 (odbicia) + margines;
-        #                      wszystko po nim jest odcinane (to echa/szum,
-        #                      nie nowa informacja o linii)
-        # corrected_voltages - napięcia po odjęciu offsetu (zera) [V]
-        # incident_voltage   - napięcie padające Vi, czyli szczyt
-        #                      impulsu #1 (wysłanego) [V]
-        # t0                 - czas odniesienia (x=0), czas szczytu
-        #                      impulsu #1 [s]
-        #
-        # Wzory (pulse-TDR: brak drugiego odjęcia Vi, patrz dyskusja):
-        #   Gamma(t) = Vcorr(t) / Vi                  (współczynnik odbicia)
-        #   x(t)     = f_piecewise(t - t0)             (odległość - patrz
-        #              build_time_to_distance_converter; przy braku
-        #              segmentow rownowazne (t-t0)*c*vf/2)
-        #   Z(t)     = Z0 * (1 + Gamma) / (1 - Gamma)  (impedancja lokalna)
-
-        c = data["c"]
-        z0 = data["z0"]
-        vf = data["vf"]
-        times = data["times"]
-        calculation_start = data["calculation_start"]
-        plot_end_index = data["plot_end_index"]
-        corrected_voltages = data["corrected_voltages"]
-        incident_voltage = data["incident_voltage"]
+        c = data["c"] # speed of light in vacuum [m/s]
+        z0 = data["z0"] # reference impedance [Ohm]
+        vf = data["vf"] # Velocity Factor for speed of light in the medium
+        times = data["times"] # list of sample times [s]
+        calculation_start = data["calculation_start"] # index of the first sample considered as reflection
+        plot_end_index = data["plot_end_index"] # index of the end of the reflection pulse
+        corrected_voltages = data["corrected_voltages"] # voltages after offset correction [V]
+        incident_voltage = data["incident_voltage"] # incident voltage Vi, which is the peak of the first pulse [V]
         t0 = data["t0"]
 
-        # Zbuduj segmenty (VF/ER->VF) z tabeli "Math"; nadpisuja globalne vf
-        # tylko w swoich zakresach odleglosci.
         raw_segments = [
             {
                 "start": seg["start"],
@@ -1192,11 +1096,11 @@ def Impedance_Wave(root, close_impedance_window):
         reflection_voltages = corrected_voltages[calculation_start:plot_end_index + 1]
 
         for t, voltage in zip(reflection_times, reflection_voltages):
-            gamma = voltage / incident_voltage
-            gamma = max(min(gamma, 0.99), -0.99)  # zabezpieczenie przed dzieleniem przez 0
+            gamma = voltage / incident_voltage #gamma = (Vr / Vi)
+            gamma = max(min(gamma, 0.99), -0.99)  # Safty net for not dividing by 0
 
-            distance = distance_from_roundtrip_time(t - t0)
-            impedance = z0 * (1 + gamma) / (1 - gamma)
+            distance = distance_from_roundtrip_time(t - t0) #distance = c * (t - t0) / (2 * vf) for every segment
+            impedance = z0 * (1 + gamma) / (1 - gamma) #impedance = Z0 * (1 + gamma) / (1 - gamma)
 
             distances.append(distance)
             impedances.append(impedance)
@@ -1245,7 +1149,7 @@ def Impedance_Wave(root, close_impedance_window):
             impedance_data,
             distances,
             impedances,
-            "Charakterystyka impedancji od odleglosci",
+            "Impedance Profile",
             "Distance (m)",
             "Impedance (Ohm)",
             "Press Calculate Z(d)",
