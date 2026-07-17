@@ -355,7 +355,7 @@ tk.Button(top_frame, text="Info",           command=open_info_window).pack(side=
 #tk.Button(top_frame, text="Read Registers", command=read_regs).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Innitial config", command=Innitial_Config).pack(side=tk.RIGHT, padx=5)
 #tk.Button(top_frame, text="Calibrate PLL", command=Calibrate_PLL).pack(side=tk.RIGHT, padx=5)
-tk.Button(top_frame, text="Impedance Wave", command=Impedance_Wave).pack(side=tk.RIGHT, padx=5)
+tk.Button(top_frame, text="Impedance Calculator", command=Impedance_Wave).pack(side=tk.RIGHT, padx=5)
 
 q1_var                = tk.BooleanVar()
 q2_var                = tk.BooleanVar()
@@ -373,6 +373,26 @@ def update_output():
     if Output_en == 0:
         add_log("No outputs selected")
 
+
+instructions_frame = tk.LabelFrame(root, text="How to", padx=10, pady=8)
+instructions_frame.pack(fill=tk.X, padx=10, pady=(0, 8))
+
+instruction_text = (
+    "1) Program Raspberry Pi Pico in the \"Pico control\" panel - required only first time\n"
+    "2) Connect with Pico by clicking the \"Connect\" button\n"
+    "3) Click the \"Initial configuration\" button - required after every power restart\n"
+    "4) Choose outputs in the Q1 or Q2 configuration menu\n"
+    "5) Start sending impulse by clicking the \"Send impulse\" button\n"
+)
+
+tk.Label(
+    instructions_frame,
+    text=instruction_text,
+    justify=tk.LEFT,
+    anchor="w",
+    wraplength=560,
+    font=("Arial", 10),
+).pack(anchor="w")
 
 # Container for config frames (side-by-side)
 config_container = tk.Frame(root)

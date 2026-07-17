@@ -355,9 +355,9 @@ def open_pico_control_window(root, log_action=None):
         width=14,
         command=lambda: handle_program_pico(drive_path_var.get(), log_action),
     ).pack(side=tk.LEFT)
-    package_button = tk.Button(manual_action_frame, text="Package", width=14)
-    package_button.config(command=lambda: handle_package(package_button, log_action, root))
-    package_button.pack(side=tk.LEFT, padx=(5, 0))
+  #  package_button = tk.Button(manual_action_frame, text="Package", width=14)
+   # package_button.config(command=lambda: handle_package(package_button, log_action, root))
+    #package_button.pack(side=tk.LEFT, padx=(5, 0))
 
     tk.Label(
         manual_frame,
