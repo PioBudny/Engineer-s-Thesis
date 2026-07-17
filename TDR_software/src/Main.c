@@ -42,12 +42,9 @@ typedef enum {
     CMD_UNKNOWN,
     CMD_IMPULSE_START,
     CMD_IMPULSE_STOP,
-    CMD_LOAD_CONFIG,
     CMD_READ_REGS,
-    CMD_DEFAULT_CONFIG,
     CMD_Innital_Config,
     CMD_CALIBRATE_PLL,
-    CMD_IMPULSE_GPIO_START,
     CMD_PING
 } CommandType;
 
@@ -59,9 +56,6 @@ static CommandType parse_command(const char *buffer)
     if (strncmp(buffer, "Innital_Config", 14) == 0)
         return CMD_Innital_Config;
 
-    // if (strncmp(buffer, "LOAD_CONFIG", 11) == 0)
-    //     return CMD_LOAD_CONFIG;
-
     if (strncmp(buffer, "IMPULSE_START", 13) == 0)
         return CMD_IMPULSE_START;
 
@@ -70,9 +64,6 @@ static CommandType parse_command(const char *buffer)
 
     if (strncmp(buffer, "CALIBRATE_PLL", 13) == 0)
         return CMD_CALIBRATE_PLL;
-
-    if (strncmp(buffer, "IMPULSE_GPIO_START", 18) == 0)
-        return CMD_IMPULSE_GPIO_START;
 
     if (strncmp(buffer, "PING", 4) == 0)
         return CMD_PING;
@@ -87,14 +78,6 @@ void innit(){
     gpio_put(LED_PIN, 0);
 
     i2c_device_init(I2C_PORT, I2C_SDA, I2C_SCL);
-
-    gpio_init(2);
-    gpio_set_dir(2, GPIO_OUT);
-    gpio_put(2, 1);
-
-    gpio_init(3);
-    gpio_set_dir(3, GPIO_OUT);
-    gpio_put(3, 1);
 
 }
 
@@ -143,124 +126,6 @@ int main()
                         printf("PONG\n");
                         break;
                     }
-
-                    // case CMD_LOAD_CONFIG: {
-                    // uint8_t q1_source, q2_source, jitter_ant, output_en;
-                    // uint16_t q1_freq, q2_freq;
-
-                    // sscanf(buffer,
-                    //     "LOAD_CONFIG,%hhu,%hhu,%hhu,%hu,%hu",
-                    //     &output_en,
-                    //     &q1_source,
-                    //     &q2_source,
-                    //     &q1_freq,
-                    //     &q2_freq);
-
-                    //     cfg_count = 0;
-
-                    //         // ── Q2 ──────────────────────────────────────────
-                    //         if(output_en == 8 || output_en == 12) {
-                    //             printf("Configuring Q2...\n");
-                    //             if (q2_source == 0) {               // Crystal        
-                    //                 cfg_add(0x5F, 0x00);        
-                    //                 cfg_add(0x63, 0x03);             
-                    //             if (q2_freq == 1) {             // Crystal 1MHz
-                    //                 cfg_add(0x46, 0x00);  
-                    //                 cfg_add(0x47, 0x0C);        
-                    //                 cfg_add(0x5B, 0x08);       
-                    //             }
-                    //             else if (q2_freq == 4) {        // Crystal 4MHz 
-                    //                 cfg_add(0x46, 0x00);              
-                    //                 cfg_add(0x47, 0x03);        
-                    //                 cfg_add(0x5B, 0x02);        
-                    //             }
-                    //             else if (q2_freq == 10000) {        // Crystal 10kHz             
-                    //                 cfg_add(0x46, 0x04);        
-                    //                 cfg_add(0x47, 0xE2);
-                    //                 cfg_add(0x5B, 0x00);        
-                    //             }
-                    //         }
-
-                    //             // ── Q2 ──────────────────────────────────
-                    //                 else if (q2_source == 2) { //PLL
-                    //                 cfg_add(0x5F, 0x00);
-                    //                 cfg_add(0x63, 0x00);
-                    //                 if (q2_freq == 25) {
-                    //                     cfg_add(0x47, 0x46);
-                    //                     cfg_add(0x5B, 0x00);
-                    //                 }
-                    //                 else if (q2_freq == 50) {
-                    //                     cfg_add(0x47, 0x23);
-                    //                     cfg_add(0x5B, 0x00);
-                    //                 }
-                    //                 else if (q2_freq == 100) {
-                    //                     cfg_add(0x47, 0x11);
-                    //                     cfg_add(0x5B, 0x04);
-                    //                 }
-                    //                 else if (q2_freq == 200) {
-                    //                     cfg_add(0x47, 0x08);
-                    //                     cfg_add(0x5B, 0x06);
-                    //                 }
-                    //                 }
-                    //             }
-                    //                 // ── Q1 ──────────────────────────────────
-                    //             if (output_en == 4 || output_en == 12) {
-                    //                 printf("Configuring Q1...\n");
-                    //                 if (q1_source == 0) {               // Crystal
-                    //                         cfg_add(0x5B, 0x00);        // NFRAC_Q2 (Część ułamkowa fizycznego Q2) [4, 11]      
-                    //                         cfg_add(0x63, 0x30);        // CLK_SEL (Wybór Crystal dla wyjścia Q3) [4, 12, 14]
-                    //                     if (q2_freq == 1) {             // Crystal 1MHz
-                    //                         cfg_add(0x49, 0x00);
-                    //                         cfg_add(0x4A, 0x0C);        
-                    //                         cfg_add(0x5F, 0x08);        
-                    //                     }
-                    //                     else if (q2_freq == 4) {
-                    //                         cfg_add(0x49, 0x04);        // Crystal 4MHz             
-                    //                         cfg_add(0x4A, 0x03);        // N_Q3 (Dzielnik całkowity dla 4MHz) [2, 9]       
-                    //                         cfg_add(0x5F, 0x02);        // NFRAC_Q3 (Część ułamkowa dla 4MHz) [4, 12]    
-                    //                     }
-                    //                     else if (q2_freq == 10000) {        // Crystal 10kHz             
-                    //                         cfg_add(0x49, 0x04);        
-                    //                         cfg_add(0x4A, 0xE2);  
-                    //                         cfg_add(0x5F, 0x00);      
-                    //             }
-                    //                 }
-                    //                     // ── Q1 ──────────────────────────────────
-                    //                     else if (q1_source == 2) {              // PLL Mode
-                    //                         cfg_add(0x5B, 0x00);
-                    //                         cfg_add(0x63, 0x00);
-                    //                         if (q1_freq == 25) {
-                    //                             cfg_add(0x4A, 0x46);
-                    //                             cfg_add(0x5F, 0x00);
-                    //                         }
-                    //                         else if (q1_freq == 50) {
-                    //                             cfg_add(0x4A, 0x23);
-                    //                             cfg_add(0x5F, 0x00);
-                    //                         }
-                    //                         else if (q1_freq == 100) {
-                    //                             cfg_add(0x4A, 0x11);
-                    //                             cfg_add(0x5F, 0x04);
-                    //                         }
-                    //                         else if (q1_freq == 200) {
-                    //                             cfg_add(0x4A, 0x08);
-                    //                             cfg_add(0x5F, 0x06);
-                    //                         }
-                    //                     }
-                    //                 }
-
-                    //     printf("\nGenerated configuration:\n");
-                    //     printf("=======================\n");
-
-                    //     for(size_t i = 0; i < cfg_count; i++)
-                    //     {
-                    //         printf("REG[0x%04X] = 0x%02X\n",
-                    //             cfg[i].reg,
-                    //             cfg[i].value);
-                    //     }
-
-                    //     load_tab(I2C_PORT, cfg, cfg_count);
-                    //     break;
-                    // }
 
                     case CMD_IMPULSE_START: {
 
@@ -313,8 +178,6 @@ int main()
                     case CMD_IMPULSE_STOP: {
                         reg = 0x00;
                         i2c_write_reg16(I2C_PORT, DEVICE_ADDR, 0x39, &reg, 1);
-                        gpio_put(2, 1);
-                        gpio_put(3, 1);
                         printf("Impulse stopped\n");
                         break;
                     }
