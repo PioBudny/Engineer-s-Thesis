@@ -1,4 +1,4 @@
-#include "NLG9881.h"
+#include "8T49N241.h"
 #include "pico/stdlib.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -49,7 +49,7 @@ bool i2c_read_reg16(i2c_inst_t *i2c, uint8_t addr, uint16_t reg, uint8_t *data, 
     return true;
 }
 
-const pll_cfg_t Constant_values[] =
+const NLG_cfg_t Default_values[] =
 {
     {0x0000, 0x09},
     {0x0001, 0x50},
@@ -121,7 +121,7 @@ const pll_cfg_t Constant_values[] =
     {0x0047, 0xE2},
 
     {0x0048, 0x00},
-    {0x0049, 0x00},
+    {0x0049, 0x04},
     {0x004A, 0xE2},
 
     {0x004B, 0x00},
@@ -181,7 +181,7 @@ const pll_cfg_t Constant_values[] =
     {0x0200, 0x73},
 };
 
-const pll_cfg_t GPIO_Test[] =
+const NLG_cfg_t Debug_values[] =
 {
     {0x0000, 0x09},
     {0x0001, 0x50},
@@ -309,8 +309,8 @@ const pll_cfg_t GPIO_Test[] =
     {0x007B, 0xCC},
 };
 
-const size_t GPIO_Test_count = sizeof(GPIO_Test) / sizeof(GPIO_Test[0]);
-const size_t Constant_values_count = sizeof(Constant_values) / sizeof(Constant_values[0]);
+const size_t Debug_values_count = sizeof(Debug_values) / sizeof(Debug_values[0]);
+const size_t Default_values_count = sizeof(Default_values) / sizeof(Default_values[0]);
 
 void Flag_Clear(i2c_inst_t *i2c)
 {
@@ -400,7 +400,7 @@ void dump_all_regs(i2c_inst_t *i2c)
 }
 
 
-bool load_tab(i2c_inst_t *i2c, const pll_cfg_t *cfg, size_t count)
+bool load_tab(i2c_inst_t *i2c, const NLG_cfg_t *cfg, size_t count)
 {
     printf("Loading config...\n");
 

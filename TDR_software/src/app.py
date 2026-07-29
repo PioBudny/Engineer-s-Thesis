@@ -1,10 +1,9 @@
 import sys
+import time
 from pathlib import Path
 import tkinter as tk
-# from tkinter import ttk
 import serial
 import serial.tools.list_ports
-import time
 from Impedance_wave import Impedance_Wave as _Impedance_Wave
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from pico_control import (
@@ -15,14 +14,17 @@ from pico_control import (
 APP_NAME = "TDR Control Software"
 APP_VERSION = "1.0"
 APP_PCB_COMPAT = "TDR 3.0"
-APP_SOURCE_URL = "https://github.com/<placeholder>/TDR_software"
+APP_SOURCE_URL = "https://github.com/PioBudny/Engineer-s-Thesis"
 APP_AUTHOR = "Piotr Budny"
 
 ser = None
 current_port = None
 log_window = None
 log_text = None
+log_label = None
 serial_reader_started = False
+reconnect_deadline = None
+RECONNECT_TIMEOUT = 60
 Output_en = 0
 Selected_Frequency = 0
 impedance_window = None
@@ -98,26 +100,36 @@ def read_serial():
                     add_log(line.decode(errors='ignore').strip())
         except Exception:
             disconnect()
-            root.after(2000, try_reconnect)
+            start_reconnect()
             return
     root.after(100, read_serial)
 
+def start_reconnect():
+    global reconnect_deadline
+    reconnect_deadline = time.monotonic() + RECONNECT_TIMEOUT
+    root.after(2000, try_reconnect)
+
 def try_reconnect():
-    if ser and ser.is_open: 
+    global reconnect_deadline
+    if ser and ser.is_open:
+        return
+    if reconnect_deadline is None or time.monotonic() >= reconnect_deadline:
+        reconnect_deadline = None
+        add_log("Reconnect timed out - press Connect to retry")
         return
     port = find_pico()
     if port:
         connect()
     else:
         root.after(2000, try_reconnect)
-        
+
 def start_serial_reader():
     global serial_reader_started
     if not serial_reader_started:
         serial_reader_started = True
         root.after(100, read_serial)
 def connect():
-    global ser, current_port
+    global ser, current_port, reconnect_deadline
 
     port = find_pico()
     if not port:
@@ -144,6 +156,7 @@ def connect():
             return
 
         current_port = port
+        reconnect_deadline = None
         status_label.itemconfig("led", fill="green")
         add_log("Connected to " + port)
         start_serial_reader()
@@ -196,6 +209,12 @@ def Calibrate_PLL():
         add_log("Not connected to Pico")
         return
     ser.write(b"CALIBRATE_PLL\n")
+    
+def DEBUG():
+    if not (ser and ser.is_open):
+        add_log("Not connected to Pico")
+        return
+    ser.write(b"DEBUG\n")
 
 # ===== IMPEDANCE WAVE WINDOW =====
  
@@ -213,8 +232,6 @@ def Impedance_Wave():
         return
     impedance_window = _Impedance_Wave(root, close_impedance_window)
     
-# ===== CALCULATOR WINDOW =====
-
 # ===== PICO CONTROL WINDOW =====
 
 def open_pico_control_window():
@@ -329,7 +346,8 @@ def open_info_window():
 # ===== LOG =====
 
 def add_log(message):
-    log_label.config(text=message)
+    if log_label:
+        log_label.config(text=message)
     if log_text:
         append_log_text(message)
 
@@ -337,7 +355,7 @@ def add_log(message):
 # ===== GUI =====
 
 root = tk.Tk()
-root.title("TDR App")
+root.title("TDR Control Software")
 root.geometry("600x400")
 
 # Top frame
@@ -352,10 +370,11 @@ tk.Button(top_frame, text="Connect",        command=connect).pack(side=tk.RIGHT,
 tk.Button(top_frame, text="Pico control", command=open_pico_control_window).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Open Log",       command=open_log_window).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Info",           command=open_info_window).pack(side=tk.RIGHT, padx=5)
-#tk.Button(top_frame, text="Read Registers", command=read_regs).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Innitial config", command=Innitial_Config).pack(side=tk.RIGHT, padx=5)
-#tk.Button(top_frame, text="Calibrate PLL", command=Calibrate_PLL).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Impedance Calculator", command=Impedance_Wave).pack(side=tk.RIGHT, padx=5)
+#tk.Button(top_frame, text="Read Registers", command=read_regs).pack(side=tk.RIGHT, padx=5)
+#tk.Button(top_frame, text="Calibrate PLL", command=Calibrate_PLL).pack(side=tk.RIGHT, padx=5)
+#tk.Button(top_frame, text="Debug", command=DEBUG).pack(side=tk.RIGHT, padx=5)
 
 q1_var                = tk.BooleanVar()
 q2_var                = tk.BooleanVar()
@@ -426,14 +445,6 @@ buttons_frame.pack(fill=tk.X, padx=10, pady=10)
 
 tk.Button(buttons_frame, text="Send impulse",        command=send_impulse,       width=15).pack(pady=5)
 tk.Button(buttons_frame, text="Stop",                command=stop_impulse,       width=15).pack(pady=5)
-
-# ── LOG ───────────────────────────────────────────────────────────────────────
-log_frame = tk.Frame(root)
-log_frame.pack(fill=tk.X, padx=10, pady=10, side=tk.BOTTOM)
-
-tk.Label(log_frame, text="LOG:").pack(side=tk.LEFT, padx=5)
-log_label = tk.Label(log_frame, text="Waiting for events...", fg="gray", justify=tk.LEFT)
-log_label.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
 
 def on_closing():

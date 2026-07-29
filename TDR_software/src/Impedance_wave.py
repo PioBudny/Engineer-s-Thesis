@@ -12,7 +12,7 @@ def Impedance_Wave(root, close_impedance_window):
     root_w = root.winfo_width()
 
     impedance_window = tk.Toplevel(root)
-    impedance_window.title("Impedance Wave")
+    impedance_window.title("Impedance Calculator")
     impedance_window.geometry(f"1100x620+{root_x + root_w + 10}+{root_y}")
     impedance_window.protocol("WM_DELETE_WINDOW", close_impedance_window)
 
@@ -1043,10 +1043,16 @@ def Impedance_Wave(root, close_impedance_window):
             reflection_peak_index, _ = find_pulse_peak_and_end(
                 corrected_voltages, reflection_start_index, noise_threshold
             )
-            plot_end_index = min(reflection_peak_index, len(corrected_voltages) - 1)
         else:
             reflection_peak_index = calculation_start
-            plot_end_index = len(corrected_voltages) - 1
+
+        # Cut at reflection_peak_index only tracks the *first* reflection's
+        # extremum. For an open end that's near the end of the file anyway
+        # (the reflection never decays back below the noise floor), but for
+        # a short/matched end the signal dips, returns near baseline, and
+        # the line keeps going - cutting at the dip discarded that tail.
+        # Always show through the end of the file instead.
+        plot_end_index = len(corrected_voltages) - 1
 
         return {
             "c": c,

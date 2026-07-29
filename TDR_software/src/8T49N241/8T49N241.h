@@ -170,13 +170,13 @@
 typedef struct {
     uint16_t reg;
     uint8_t value;
-} pll_cfg_t;
+} NLG_cfg_t;
 
-extern const pll_cfg_t Constant_values[];
-extern const size_t Constant_values_count;
+extern const NLG_cfg_t Default_values[];
+extern const size_t Default_values_count;
 
-extern const pll_cfg_t GPIO_Test[];
-extern const size_t GPIO_Test_count;
+extern const NLG_cfg_t Debug_values[];
+extern const size_t Debug_values_count;
 
 
 // podstawowe operacje
@@ -185,6 +185,6 @@ bool i2c_write_reg16(i2c_inst_t *i2c, uint8_t addr, uint16_t reg, uint8_t *data,
 bool i2c_read_reg16(i2c_inst_t *i2c, uint8_t addr, uint16_t reg, uint8_t *data, size_t len);
 void dump_all_regs(i2c_inst_t *i2c);
 void Flag_Clear(i2c_inst_t *i2c);
-bool load_tab(i2c_inst_t *i2c, const pll_cfg_t *tab, size_t count);
+bool load_tab(i2c_inst_t *i2c, const NLG_cfg_t *tab, size_t count);
 
 #endif

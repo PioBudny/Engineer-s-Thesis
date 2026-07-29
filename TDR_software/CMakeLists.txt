@@ -37,7 +37,7 @@ pico_sdk_init()
  
 add_executable(TDR_software
     src/Main.c
-    src/NLG/NLG9881.c
+    src/8T49N241/8T49N241.c
 )
 
 pico_set_program_name(TDR_software "TDR_software")

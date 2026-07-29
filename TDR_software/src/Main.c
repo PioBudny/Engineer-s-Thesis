@@ -4,7 +4,7 @@
 #include "hardware/i2c.h"
 #include "hardware/timer.h"
 #include <string.h>
-#include "NLG9881.h"
+#include "8T49N241/8T49N241.h"
 #include "hardware/clocks.h"
 
 // I2C defines
@@ -17,26 +17,8 @@
 
 static uint8_t reg;
 
-pll_cfg_t cfg[MAX_CFG_ITEMS];
+NLG_cfg_t cfg[MAX_CFG_ITEMS];
 size_t cfg_count = 0;
-bool GPIO_ON;
-
-void cfg_add(uint16_t reg, uint8_t value)
-{
-    for (size_t i = 0; i < cfg_count; i++)
-    {
-        if (cfg[i].reg == reg)
-        {
-            cfg[i].value |= value;
-            return;
-        }
-    }
-
-    cfg[cfg_count].reg = reg;
-    cfg[cfg_count].value = value;
-    cfg_count++;
-}
-
 
 typedef enum {
     CMD_UNKNOWN,
@@ -44,6 +26,7 @@ typedef enum {
     CMD_IMPULSE_STOP,
     CMD_READ_REGS,
     CMD_Innital_Config,
+    CMD_DEBUG,
     CMD_CALIBRATE_PLL,
     CMD_PING
 } CommandType;
@@ -55,6 +38,9 @@ static CommandType parse_command(const char *buffer)
 
     if (strncmp(buffer, "Innital_Config", 14) == 0)
         return CMD_Innital_Config;
+    
+    if (strncmp(buffer, "DEBUG", 5) == 0)
+        return CMD_DEBUG;
 
     if (strncmp(buffer, "IMPULSE_START", 13) == 0)
         return CMD_IMPULSE_START;
@@ -111,8 +97,14 @@ int main()
                     }
 
                     case CMD_Innital_Config: {
-                        load_tab(I2C_PORT, Constant_values, Constant_values_count);
+                        load_tab(I2C_PORT, Default_values, Default_values_count);
                         printf("OK\n");
+                        break;
+                    }
+
+                    case CMD_DEBUG: {
+                        load_tab(I2C_PORT, Debug_values, Debug_values_count);
+                        printf("DEBUG\n");
                         break;
                     }
 
