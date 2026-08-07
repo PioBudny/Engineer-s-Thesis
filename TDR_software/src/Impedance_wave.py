@@ -1,8 +1,50 @@
 import tkinter as tk
 import csv
 import bisect
+from pathlib import Path
 from tkinter import filedialog, messagebox
 from tkinter import ttk
+
+SCOPE_RIGOL = "DS4052 Rigol"
+SCOPE_RS = "RTO2044 Rohde&Schwarz"
+
+
+def detect_trigger_index(values):
+    """Auto-detects which sample corresponds to the scope's trigger point
+    (t=0): the peak of the first pulse that rises clearly above the
+    baseline noise. Used when compiling a raw .wfm.csv (one voltage value
+    per line, no timing info) from the RTO2044 into the .csv format this
+    calculator expects."""
+
+    def average(nums):
+        return sum(nums) / len(nums)
+
+    prelim_count = max(3, int(len(values) * 0.05))
+    prelim_offset = average(values[:prelim_count])
+    corrected = [v - prelim_offset for v in values]
+    noise = average([abs(v) for v in corrected[:prelim_count]])
+    peak = max(abs(v) for v in corrected)
+    threshold = max(noise * 6, peak * 0.1, 1e-12)
+
+    start_index = None
+    for i, v in enumerate(corrected):
+        if abs(v) >= threshold:
+            start_index = i
+            break
+    if start_index is None:
+        return 0
+
+    peak_index = start_index
+    peak_magnitude = abs(corrected[start_index])
+    for i in range(start_index, len(corrected)):
+        magnitude = abs(corrected[i])
+        if magnitude < threshold:
+            break
+        if magnitude > peak_magnitude:
+            peak_magnitude = magnitude
+            peak_index = i
+
+    return peak_index
 
 
 def Impedance_Wave(root, close_impedance_window):
@@ -22,17 +64,18 @@ def Impedance_Wave(root, close_impedance_window):
 
     top_frame = tk.Frame(impedance_window)
     top_frame.pack(fill=tk.X, padx=10, pady=8)
+    top_frame.columnconfigure(0, weight=1)
 
     csv_frame = tk.Frame(top_frame)
-    csv_frame.pack(side=tk.LEFT, fill=tk.X, expand=True)
-
-    button_frame = tk.Frame(top_frame)
-    button_frame.pack(side=tk.RIGHT)
+    csv_frame.grid(row=0, column=0, sticky="new", padx=(0, 10), pady=(0, 4))
 
     csv_path = tk.StringVar()
     z0_var = tk.StringVar(value="50")
     param_type_var = tk.StringVar(value="VF")
     param_value_var = tk.StringVar(value="")
+    scope_var = tk.StringVar(value=SCOPE_RIGOL)
+    rto_increment_var = tk.StringVar()
+    raw_selected_path_var = tk.StringVar()  # file picked via Browse, before any RTO2044 compiling
 
     tk.Label(csv_frame, text="CSV file:").pack(side=tk.LEFT)
 
@@ -41,20 +84,112 @@ def Impedance_Wave(root, close_impedance_window):
         textvariable=csv_path
     ).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
 
+    def prompt_rto_increment(blocking=False):
+        prompt = tk.Toplevel(impedance_window)
+        prompt.title("RTO2044 Increment")
+        prompt.geometry("280x110")
+
+        tk.Label(prompt, text="Increment (ps):", anchor="w").pack(fill=tk.X, padx=10, pady=(10, 4))
+        entry_var = tk.StringVar(value=rto_increment_var.get())
+        entry = tk.Entry(prompt, textvariable=entry_var)
+        entry.pack(fill=tk.X, padx=10)
+        entry.focus_set()
+
+        def confirm():
+            rto_increment_var.set(entry_var.get())
+            prompt.destroy()
+
+        tk.Button(prompt, text="OK", command=confirm).pack(pady=10)
+        prompt.protocol("WM_DELETE_WINDOW", prompt.destroy)
+
+        if blocking:
+            prompt.grab_set()
+            impedance_window.wait_window(prompt)
+
+    def compile_wfm_to_csv(wfm_filename, increment_s):
+        """Converts a raw .wfm.csv (one voltage value per line, no timing
+        info) into the .csv format this calculator expects, writing it next
+        to the source file. Raises OSError/ValueError on failure."""
+        with open(wfm_filename, newline="") as wfm_file:
+            raw_lines = [line.strip() for line in wfm_file if line.strip()]
+
+        if not raw_lines:
+            raise ValueError("The .wfm.csv file contains no data.")
+
+        try:
+            values = [float(v) for v in raw_lines]
+        except ValueError:
+            raise ValueError("The .wfm.csv file must contain one numeric value per line.")
+
+        # Sample 0 in the file isn't necessarily t=0 - the scope's trigger
+        # (t=0) usually sits somewhere in the middle of the capture, with
+        # pre-trigger samples before it. Detect it automatically from the
+        # waveform instead of asking for it.
+        trigger_index = detect_trigger_index(values)
+        start_s = -trigger_index * increment_s
+
+        wfm_file_path = Path(wfm_filename)
+        output_name = wfm_file_path.name
+        if output_name.lower().endswith(".wfm.csv"):
+            output_name = output_name[: -len(".wfm.csv")] + ".csv"
+        else:
+            output_name = wfm_file_path.stem + ".csv"
+        output_path = wfm_file_path.parent / output_name
+
+        with open(output_path, "w", newline="") as out_file:
+            writer = csv.writer(out_file)
+            writer.writerow(["X", "CH1", "Start", "Increment", ""])
+            writer.writerow(["Sequence", "Volt", f"{start_s:.6e}", f"{increment_s:.6e}", ""])
+            for index, value in enumerate(raw_lines):
+                writer.writerow([index, value, ""])
+
+        return output_path
+
+    def load_from_scope(source_path):
+        """Prepares source_path for loading according to the currently
+        selected oscilloscope. For RTO2044 this asks for the increment
+        (only here, right before it's needed) and compiles the raw
+        .wfm.csv. Returns the path to actually load, or None on
+        failure/cancel."""
+        if scope_var.get() != SCOPE_RS:
+            return source_path
+
+        if not rto_increment_var.get().strip():
+            prompt_rto_increment(blocking=True)
+
+        try:
+            increment_ps = float(rto_increment_var.get())
+        except ValueError:
+            messagebox.showerror("Invalid increment", "Increment (ps) must be numeric.")
+            return None
+
+        try:
+            output_path = compile_wfm_to_csv(source_path, increment_ps * 1e-12)
+        except (OSError, ValueError) as e:
+            messagebox.showerror(".wfm.csv error", str(e))
+            return None
+
+        return str(output_path)
+
     def browse_csv():
+        # File first, oscilloscope second - Browse doesn't need to know
+        # which scope produced the file; that's decided when Load .csv
+        # runs, based on whatever is selected in the scope list at that time.
         filename = filedialog.askopenfilename(
-            title="Select CSV file",
+            title="Select measurement file",
             filetypes=[
                 ("CSV files", "*.csv"),
-                ("All files", "*.*")
-            ]
+                ("WFM CSV files", "*.wfm.csv"),
+                ("All files", "*.*"),
+            ],
         )
 
         if filename:
+            raw_selected_path_var.set(filename)
             csv_path.set(filename)
 
-    settings_frame = tk.Frame(impedance_window)
-    settings_frame.pack(fill=tk.X, padx=10, pady=(0, 8))
+    settings_frame = tk.Frame(top_frame)
+    settings_frame.grid(row=1, column=0, sticky="new", padx=(0, 10))
 
     tk.Label(settings_frame, text="Z0 (Ohm):").pack(side=tk.LEFT)
     tk.Entry(settings_frame, textvariable=z0_var, width=8).pack(side=tk.LEFT, padx=(4, 12))
@@ -111,9 +246,11 @@ def Impedance_Wave(root, close_impedance_window):
     # ────────────────────────────────────────────────────────────────
     
     howto_text = (
-        "How to use: 1) Browse and select a .csv file  →  2) Load .csv  →  "
-        "3) set Z0 and VF/ER (add segments on the right if the cable has "
-        "different sections)  →  4) Calculate Z(d)."
+        "How to use: 1) Browse and select the file  →  2) select the "
+        "oscilloscope that produced it (DS4052 Rigol or RTO2044 "
+        "Rohde&Schwarz)  →  3) Load .csv  →  4) set Z0 and VF/ER (add "
+        "segments on the right if the cable has different sections)  →  "
+        "5) Calculate Z(d)."
     )
     tk.Label(
         impedance_window,
@@ -881,6 +1018,16 @@ def Impedance_Wave(root, close_impedance_window):
             return None
 
     def on_load_csv():
+        source = raw_selected_path_var.get()
+        if not source:
+            messagebox.showwarning("No file selected", "Select a file first.")
+            return
+
+        resolved_path = load_from_scope(source)
+        if resolved_path is None:
+            return
+        csv_path.set(resolved_path)
+
         loaded = get_loaded_csv()
         if not loaded:
             return
@@ -981,16 +1128,22 @@ def Impedance_Wave(root, close_impedance_window):
             return None
 
         def find_pulse_peak_and_end(values, start_index, noise_threshold): #index of peak and index of first sample below threshold after peak
-            peak_index = start_index + max(
-                range(len(values) - start_index),
-                key=lambda i: abs(values[start_index + i])
-            )
-
+            # Track the *first* excursion above the noise threshold, not the
+            # single largest-magnitude sample anywhere in the rest of the
+            # signal - a later spike/drift further down the trace must not
+            # get mistaken for this pulse's peak.
+            peak_index = start_index
+            peak_magnitude = abs(values[start_index])
             end_index = len(values) - 1
-            for i in range(peak_index, len(values)):
-                if abs(values[i]) < noise_threshold:
+
+            for i in range(start_index, len(values)):
+                magnitude = abs(values[i])
+                if magnitude < noise_threshold:
                     end_index = i
                     break
+                if magnitude > peak_magnitude:
+                    peak_magnitude = magnitude
+                    peak_index = i
 
             return peak_index, end_index
 
@@ -1165,25 +1318,34 @@ def Impedance_Wave(root, close_impedance_window):
         )
 
     tk.Button(
-        button_frame,
+        top_frame,
         text="Browse",
-        width=10,
+        width=14,
         command=browse_csv
-    ).pack(side=tk.LEFT, padx=5)
+    ).grid(row=0, column=1, sticky="new", padx=(0, 5), pady=(0, 4))
 
     tk.Button(
-        button_frame,
+        top_frame,
         text="Load .csv",
-        width=10,
+        width=14,
         command=on_load_csv
-    ).pack(side=tk.LEFT, padx=(0, 5))
+    ).grid(row=0, column=2, sticky="new", pady=(0, 4))
+
+    scope_combo = ttk.Combobox(
+        top_frame,
+        textvariable=scope_var,
+        values=[SCOPE_RIGOL, SCOPE_RS],
+        state="readonly",
+        width=13
+    )
+    scope_combo.grid(row=1, column=1, sticky="new", padx=(0, 5))
 
     tk.Button(
-        button_frame,
+        top_frame,
         text="Calculate Z(d)",
         width=14,
         command=on_calculate_zd
-    ).pack(side=tk.LEFT, padx=(0, 5))
+    ).grid(row=1, column=2, sticky="new")
 
     impedance_window.after(50, redraw_charts)
 

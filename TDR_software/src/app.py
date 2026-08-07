@@ -12,7 +12,7 @@ from pico_control import (
 )
 
 APP_NAME = "TDR Control Software"
-APP_VERSION = "1.0"
+APP_VERSION = "1.1"
 APP_PCB_COMPAT = "TDR 3.0"
 APP_SOURCE_URL = "https://github.com/PioBudny/Engineer-s-Thesis"
 APP_AUTHOR = "Piotr Budny"
@@ -316,10 +316,21 @@ def open_info_window():
 
         "Initial Config - sends the default NLG9881 configuration to the Pico.\n\n"
 
-        "Impedance Wave - opens the TDR impedance calculation and plotting window.\n\n"
+        "Impedance Calculator - opens the TDR impedance calculation and plotting window.\n\n"
 
-        "  • Browse - opens a file dialog to select a .csv file containing\n"
-        "    TDR measurement data.\n"
+        "  • Oscilloscope list (below Browse) - selects which instrument the\n"
+        "    file comes from, since each one exports data differently:\n"
+        "      - DS4052 Rigol - Browse opens a plain .csv file already in\n"
+        "        the format the calculator expects.\n"
+        "      - RTO2044 Rohde&Schwarz - Browse selects a raw .wfm.csv file\n"
+        "        (one voltage value per line, no timing info) and converts\n"
+        "        it automatically into the expected .csv format. Selecting\n"
+        "        this scope pops up a small window asking for the\n"
+        "        Increment (ps), the time step between samples; the\n"
+        "        trigger point (t=0) is detected automatically from the\n"
+        "        waveform.\n"
+        "  • Browse - opens a file dialog to select the measurement file,\n"
+        "    with behavior depending on the selected oscilloscope above.\n"
         "  • Load - loads the selected .csv file and displays the waveform.\n"
         "  • Calculate - calculates the impedance profile from the loaded\n"
         "    TDR measurement.\n"
