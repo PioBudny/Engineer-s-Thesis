@@ -414,7 +414,7 @@ bool load_tab(i2c_inst_t *i2c, const NLG_cfg_t *cfg, size_t count)
         {
             sleep_ms(2); 
             if (!i2c_write_reg16(i2c, DEVICE_ADDR, reg, &value, 1)) {
-                printf("Skip reg 0x%04X (NACK)\n", reg);
+                printf("Skip reg 0x%04X\n", reg);
                 continue;
             }
         }
