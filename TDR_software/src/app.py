@@ -339,8 +339,8 @@ def open_info_window():
         "    sections to be defined with individual velocity factors or\n"
         "    relative permittivity values.\n\n"
 
-        "Send Impulse - generates a pulse on the selected outputs (Q1/Q2).\n\n"
-        "  • Single Impulse - when enabled, only a single pulse is generated\n"
+        "Send pulse - generates a pulse on the selected outputs (Q1/Q2).\n\n"
+        "  • Single pulse - when enabled, only a single pulse is generated\n"
         "    on the selected outputs.\n"
         "  • Enable Q1/Q2 - selects which outputs will generate the pulse.\n\n"
 
@@ -409,7 +409,7 @@ instruction_text = (
     "2) Connect with Pico by clicking the \"Connect\" button\n"
     "3) Click the \"Initial configuration\" button - required after every power restart\n"
     "4) Choose outputs in the Q1 or Q2 configuration menu\n"
-    "5) Start sending impulse by clicking the \"Send impulse\" button\n"
+    "5) Start sending pulse by clicking the \"Send pulse\" button\n"
 )
 
 tk.Label(
@@ -444,14 +444,14 @@ tk.Label(q2_config_frame, text="Q2 Configuration", font=("Arial", 10, "bold")).p
 
 q2_impulse_frame = tk.Frame(q2_config_frame)
 q2_impulse_frame.pack(fill=tk.X, padx=5, pady=5)
-tk.Checkbutton(q2_impulse_frame, text="Single impulse", variable=q2_single_impulse_var).pack(anchor="w", padx=5)
+tk.Checkbutton(q2_impulse_frame, text="Single pulse", variable=q2_single_impulse_var).pack(anchor="w", padx=5)
 tk.Checkbutton(q2_impulse_frame, text="Enable Q2",      variable=q2_var, command=update_output).pack(anchor="w", padx=5)
 
 # ── Buttons ──────────────────────────────────────────────────────────────────
 buttons_frame = tk.Frame(root)
 buttons_frame.pack(fill=tk.X, padx=10, pady=10)
 
-tk.Button(buttons_frame, text="Send impulse",        command=send_impulse,       width=15).pack(pady=5)
+tk.Button(buttons_frame, text="Send pulse",        command=send_impulse,       width=15).pack(pady=5)
 tk.Button(buttons_frame, text="Stop",                command=stop_impulse,       width=15).pack(pady=5)
 
 
