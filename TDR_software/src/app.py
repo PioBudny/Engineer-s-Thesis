@@ -198,11 +198,11 @@ def read_regs():
         return
     ser.write(b"READ_REGS\n")
     
-def Innitial_Config():
+def Initial_Config():
     if not (ser and ser.is_open):
         add_log("Not connected to Pico")
         return
-    ser.write(b"Innital_Config\n")
+    ser.write(b"Initial_Config\n")
     
 def Calibrate_PLL():
     if not (ser and ser.is_open):
@@ -378,7 +378,7 @@ tk.Button(top_frame, text="Connect",        command=connect).pack(side=tk.RIGHT,
 tk.Button(top_frame, text="Pico control", command=open_pico_control_window).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Open Log",       command=open_log_window).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Info",           command=open_info_window).pack(side=tk.RIGHT, padx=5)
-tk.Button(top_frame, text="Innitial config", command=Innitial_Config).pack(side=tk.RIGHT, padx=5)
+tk.Button(top_frame, text="Initial config", command=Initial_Config).pack(side=tk.RIGHT, padx=5)
 tk.Button(top_frame, text="Impedance Calculator", command=Impedance_Wave).pack(side=tk.RIGHT, padx=5)
 #tk.Button(top_frame, text="Read Registers", command=read_regs).pack(side=tk.RIGHT, padx=5)
 #tk.Button(top_frame, text="Calibrate PLL", command=Calibrate_PLL).pack(side=tk.RIGHT, padx=5)

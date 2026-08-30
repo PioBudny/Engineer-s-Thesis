@@ -25,7 +25,7 @@ typedef enum {
     CMD_IMPULSE_START,
     CMD_IMPULSE_STOP,
     CMD_READ_REGS,
-    CMD_Innital_Config,
+    CMD_Initial_Config,
     CMD_DEBUG,
     CMD_CALIBRATE_PLL,
     CMD_PING
@@ -36,8 +36,8 @@ static CommandType parse_command(const char *buffer)
     if (strncmp(buffer, "READ_REGS", 9) == 0)
         return CMD_READ_REGS;
 
-    if (strncmp(buffer, "Innital_Config", 14) == 0)
-        return CMD_Innital_Config;
+    if (strncmp(buffer, "Initial_Config", 14) == 0)
+        return CMD_Initial_Config;
     
     if (strncmp(buffer, "DEBUG", 5) == 0)
         return CMD_DEBUG;
@@ -96,7 +96,7 @@ int main()
                         break;
                     }
 
-                    case CMD_Innital_Config: {
+                    case CMD_Initial_Config: {
                         load_tab(I2C_PORT, Default_values, Default_values_count);
                         printf("OK\n");
                         break;
